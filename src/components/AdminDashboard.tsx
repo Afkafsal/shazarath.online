@@ -113,16 +113,16 @@ export default function AdminDashboard({
   const [setEditionsSectionTitle, setSetEditionsSectionTitle] = useState(settings.editionsSectionTitle || 'النسخة الورقية المطبوعة PDF');
   const [setEventsSectionTitle, setSetEventsSectionTitle] = useState(settings.eventsSectionTitle || 'الندوات والفعاليات الأكاديمية لمجلتنا');
   const [setGallerySectionTitle, setSetGallerySectionTitle] = useState(settings.gallerySectionTitle || 'البوم صور المجمع');
-  const [setCreativeSectionBadge, setSetCreativeSectionBadge] = useState(settings.creativeSectionBadge || 'القسم الإبداعي والواحة الأدبية بمجلة الاعتصام');
+  const [setCreativeSectionBadge, setSetCreativeSectionBadge] = useState(settings.creativeSectionBadge || 'القسم الإبداعي والواحة الأدبية بمجلة شذرات');
   const [setCreativeSectionTitle, setSetCreativeSectionTitle] = useState(settings.creativeSectionTitle || 'الواحة الأدبية والأقلام الواعدة');
-  const [setCreativeSectionDesc, setSetCreativeSectionDesc] = useState(settings.creativeSectionDesc || 'مساحة مخصصة لقراء مجلة الاعتصام للإبحار في فضاء المعلقات والقصائد الخالدة، ومطالعة طيف من الروايات والقصص المعبرة المليئة بالحكمة، وتتبع أثر الرحالة الأوائل في أسفارهم حول الآفاق.');
+  const [setCreativeSectionDesc, setSetCreativeSectionDesc] = useState(settings.creativeSectionDesc || 'مساحة مخصصة لقراء مجلة شذرات للإبحار في فضاء المعلقات والقصائد الخالدة، ومطالعة طيف من الروايات والقصص المعبرة المليئة بالحكمة، وتتبع أثر الرحالة الأوائل في أسفارهم حول الآفاق.');
   const [setCreativeSectionBtnSubmit, setSetCreativeSectionBtnSubmit] = useState(settings.creativeSectionBtnSubmit || 'أضف مساهمتك المكتوبة');
   const [setCreativeSectionBtnContact, setSetCreativeSectionBtnContact] = useState(settings.creativeSectionBtnContact || 'مراسلة هيئة التحرير');
-  const [setInstagramUrl, setSetInstagramUrl] = useState(settings.instagramUrl || 'https://www.instagram.com/aiathisam_monthly');
-  const [setWhatsappUrl, setSetWhatsappUrl] = useState(settings.whatsappUrl || 'https://whatsapp.com/channel/0029Va9N');
-  const [setYoutubeUrl, setSetYoutubeUrl] = useState(settings.youtubeUrl || 'https://www.youtube.com/@aiathisam');
-  const [setAdminId, setSetAdminId] = useState(settings.adminId || 'afsal');
-  const [setAdminPass, setSetAdminPass] = useState(settings.adminPass || 'afsal007');
+  const [setInstagramUrl, setSetInstagramUrl] = useState(settings.instagramUrl || 'https://www.instagram.com/shadharat_kms');
+  const [setWhatsappUrl, setSetWhatsappUrl] = useState(settings.whatsappUrl || 'https://whatsapp.com/channel/0029Shadh');
+  const [setYoutubeUrl, setSetYoutubeUrl] = useState(settings.youtubeUrl || 'https://www.youtube.com/@shadharat_kms');
+  const [setAdminId, setSetAdminId] = useState(settings.adminId || 'admin');
+  const [setAdminPass, setSetAdminPass] = useState(settings.adminPass || 'admin123');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Custom Deletion Confirmation Modal State (replaces confirm dialogs)

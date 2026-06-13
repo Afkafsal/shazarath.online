@@ -47,7 +47,7 @@ const POEMS_LIST = [
   {
     id: 4,
     lines: ["بصوتِ الحقِّ ندعو في بِلادٍ", "رواها العلم من نورِ الرشادِ"],
-    author: "شاعر الاعتصام"
+    author: "شاعر شذرات"
   }
 ];
 
@@ -71,14 +71,14 @@ export default function App() {
       
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed && (parsed.siteName === 'العروة' || parsed.siteName === '')) {
+        if (parsed && (parsed.siteName === 'العروة' || parsed.siteName === 'الاعتصام' || parsed.siteName === 'مجلة الاعتصام' || parsed.siteName === '')) {
           shouldReset = true;
         }
       }
       
       if (storedCats) {
         const cats = JSON.parse(storedCats);
-        if (cats && cats.length < 7) {
+        if (cats && cats.length < 5) {
           shouldReset = true;
         }
       }
@@ -236,7 +236,7 @@ export default function App() {
     if (usernameInput.trim() === expectedId && passwordInput === expectedPass) {
       setIsAdminLoggedIn(true);
       localStorage.setItem('al_urwah_admin_auth', 'true');
-      addLog("عملية تسجيل دخول ناجحة للوحة تحرير الاعتصام");
+      addLog(`عملية تسجيل دخول ناجحة للوحة تحرير ${settings.siteName || 'شذرات'}`);
       setLoginError('');
       setUsernameInput('');
       setPasswordInput('');
@@ -364,14 +364,14 @@ export default function App() {
               </div>
             </div>
 
-            {/* NEW PROMOTIONAL & SUBMISSION CALLOUT SECTION ("القسم الإبداعي والواحة الأدبية بمجلة الاعتصام") */}
+            {/* NEW PROMOTIONAL & SUBMISSION CALLOUT SECTION ("القسم الإبداعي والواحة الأدبية بمجلة شذرات") */}
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-950/20 via-slate-905 to-slate-950 border border-amber-500/15 p-8 sm:p-10 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="absolute inset-0 bg-[radial-gradient(#d97706_0.5px,transparent_0.5px)] [background-size:20px_20px] opacity-5 pointer-events-none"></div>
               
               <div className="space-y-4 text-right max-w-2xl z-10">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 border border-amber-500/25 text-amber-400">
                   <Feather className="w-3 h-3 text-amber-400" />
-                  <span>{settings.creativeSectionBadge || "القسم الإبداعي والواحة الأدبية بمجلة الاعتصام"}</span>
+                  <span>{settings.creativeSectionBadge || `القسم الإبداعي والواحة الأدبية بمجلة ${settings.siteName || 'شذرات'}`}</span>
                 </span>
                 
                 <h2 className="text-2xl sm:text-3xl font-black font-serif-ar text-slate-100 leading-tight">
@@ -379,7 +379,7 @@ export default function App() {
                 </h2>
                 
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-tajawal font-medium">
-                  {settings.creativeSectionDesc || "مساحة مخصصة لقراء مجلة الاعتصام للإبحار في فضاء المعلقات والقصائد الخالدة، ومطالعة طيف من الروايات والقصص المعبرة المليئة بالحكمة، وتتبع أثر الرحالة الأوائل في أسفارهم حول الآفاق."}
+                  {settings.creativeSectionDesc || `مساحة مخصصة لقراء مجلة ${settings.siteName || 'شذرات'} للإبحار في فضاء المعلقات والقصائد الخالدة، ومطالعة طيف من الروايات والقصص المعبرة المليئة بالحكمة، وتتبع أثر الرحالة الأوائل في أسفارهم حول الآفاق.`}
                 </p>
               </div>
 
@@ -396,7 +396,7 @@ export default function App() {
                   <span>{settings.creativeSectionBtnSubmit || "أضف مساهمتك المكتوبة"}</span>
                 </button>
                 <a
-                  href={`mailto:${settings.submissionEmail || 'iathisammonthly@gmail.com'}?subject=مساهمة في الواحة الأدبية - مجلة الاعتصام`}
+                  href={`mailto:${settings.submissionEmail || 'shadharat@gmail.com'}?subject=مساهمة في الواحة الأدبية - مجلة ${settings.siteName || 'شذرات'}`}
                   className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-850 text-slate-300 hover:text-white font-semibold font-tajawal text-xs px-6 py-3.5 rounded-xl border border-slate-800 transition text-center"
                 >
                   <FileText className="w-4 h-4 text-slate-400" />
@@ -702,7 +702,7 @@ export default function App() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ابحث بلغة عربية فصيحة في مجلة الاعتصام (مثال: الشريعة، البلاغة، التراث)..."
+                    placeholder={`ابحث بلغة عربية فصيحة في مجلة ${settings.siteName || 'شذرات'} (مثال: الشريعة، البلاغة، التراث)...`}
                     className="w-full bg-slate-950 border border-slate-800 text-slate-200 p-3.5 pr-11 rounded-2xl text-sm outline-none font-bold"
                   />
                   <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -1063,8 +1063,8 @@ export default function App() {
                       required
                       value={usernameInput}
                       onChange={(e) => setUsernameInput(e.target.value)}
-                      placeholder={settings.adminId || "afsal"}
-                      className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl outline-none ltr text-left"
+                      placeholder="أدخل اسم الحساب الإداري"
+                      className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl outline-none text-right"
                     />
                   </div>
 
@@ -1076,20 +1076,8 @@ export default function App() {
                       value={passwordInput}
                       onChange={(e) => setPasswordInput(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl outline-none ltr text-left"
+                      className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl outline-none text-right"
                     />
-                  </div>
-
-                  <div className="bg-slate-950/60 border border-slate-850 p-4 rounded-xl space-y-1.5">
-                    <span className="text-[10px] font-bold text-blue-400 flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                      <span>بيانات تصاريح المعاينة السريعة:</span>
-                    </span>
-                    <p className="text-[10px] text-slate-400 leading-normal font-semibold">
-                      الحساب المسموح به: <span className="text-white font-mono font-bold">{settings.adminId || 'afsal'}</span>
-                      <br />
-                      الرقم السري المعين للمراجعة: <span className="text-white font-mono font-bold">{settings.adminPass || 'afsal007'}</span>
-                    </p>
                   </div>
 
                   <button

@@ -19,11 +19,8 @@ export default function Footer({ settings, setActiveView }: FooterProps) {
         
         {/* Brand and Description */}
         <div className="md:col-span-2 space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center font-extrabold text-white text-base">
-              <span>أ</span>
-            </div>
-            <h3 className="text-xl font-extrabold text-slate-100 font-serif-ar">
+          <div className="flex flex-col">
+            <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 font-serif-ar leading-tight">
               {settings.siteName}
             </h3>
           </div>

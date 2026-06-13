@@ -69,20 +69,13 @@ export default function Navigation({
         <div className="flex justify-between h-20 items-center">
           
           {/* Logo & Branding Area */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavClick('home')}>
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/15 flex items-center justify-center">
-              <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                <span className="font-tajawal font-extrabold text-lg text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">أ</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <span className="block font-tajawal font-extrabold text-xl tracking-tight text-white leading-tight">
-                {settings.siteName}
-              </span>
-              <span className="block font-tajawal text-[10px] text-blue-300 font-medium">
-                {settings.collegeName}
-              </span>
-            </div>
+          <div className="flex flex-col cursor-pointer justify-center" onClick={() => handleNavClick('home')}>
+            <span className="block font-tajawal font-black text-2xl tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 leading-tight">
+              {settings.siteName}
+            </span>
+            <span className="block font-tajawal text-[10px] text-blue-300 font-medium mt-0.5">
+              {settings.collegeName}
+            </span>
           </div>
 
           {/* Desktop Navigation Links */}

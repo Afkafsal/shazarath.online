@@ -1,6 +1,6 @@
 {
   "name": "urwah-magazine",
-  "description": "Digital magazine system.",
+  "description": "منصة شذرات الأكاديمية - قسم اللغة العربية وآدابها بمجمع ك أم أو الإسلامي",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

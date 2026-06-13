@@ -201,7 +201,7 @@ export default function CreativeOasis({
   };
 
   const handleShareContent = (title: string, author: string) => {
-    const textToCopy = `الواحة الأدبية - مجلة الاعتصام: "${title}" بقلم البديل الأديب ${author}`;
+    const textToCopy = `الواحة الأدبية - مجلة ${settings?.siteName || 'شذرات'}: "${title}" بقلم البديل الأديب ${author}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(textToCopy).catch(err => {
         console.error('Failed to copy to clipboard', err);
@@ -300,13 +300,13 @@ export default function CreativeOasis({
         <div className="relative z-10 space-y-4 max-w-4xl">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/20 text-amber-300">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>{settings?.creativeSectionBadge || "القسم الإبداعي والواحة الأدبية بمجلة الاعتصام"}</span>
+            <span>{settings?.creativeSectionBadge || `القسم الإبداعي والواحة الأدبية بمجلة ${settings?.siteName || 'شذرات'}`}</span>
           </span>
           <h1 className="text-3xl sm:text-5xl font-black font-serif-ar text-white leading-tight">
             {settings?.creativeSectionTitle || "الواحة الأدبية والأقلام الواعدة"}
           </h1>
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl font-medium">
-            {settings?.creativeSectionDesc || "مساحة مخصصة لقراء مجلة الاعتصام للإبحار في فضاء المعلقات والقصائد الخالدة، ومطالعة طيف من الروايات والقصص المعبرة المليئة بالحكمة، وتتبع أثر الرحالة الأوائل في أسفارهم حول الآفاق."}
+            {settings?.creativeSectionDesc || `مساحة مخصصة لقراء مجلة ${settings?.siteName || 'شذرات'} للإبحار في فضاء المعلقات والقصائد الخالدة، ومطالعة طيف من الروايات والقصص المعبرة المليئة بالحكمة، وتتبع أثر الرحالة الأوائل في أسفارهم حول الآفاق.`}
           </p>
 
           <div className="flex gap-4 pt-2">
@@ -840,7 +840,7 @@ export default function CreativeOasis({
                       type="submit"
                       className="flex-grow bg-amber-600 hover:bg-amber-500 text-slate-100 font-bold py-2.5 rounded-xl transition cursor-pointer text-xs"
                     >
-                      مشاركة في واحة الاعتصام
+                      مشاركة في واحة {settings?.siteName || 'شذرات'}
                     </button>
                     <button
                       type="button"
