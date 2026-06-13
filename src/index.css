@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&family=Noto+Sans+Arabic:wght@100..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@theme {
+  --font-tajawal: "Noto Kufi Arabic", "Inter", sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-serif-ar: 'Noto Kufi Arabic', 'Georgia', serif;
+  
+  --color-brand-blue-950: #070d1e;
+  --color-brand-blue-900: #0a1128;
+  --color-brand-blue-800: #1c2a4f;
+  
+  /* Modern High-Legibility Dark Slate Scale (Fully matching dark mode palette) */
+  --color-slate-950: #0a1128;
+  --color-slate-905: #0e1836;
+  --color-slate-900: #020617;
+  --color-slate-850: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-750: #334155;
+  --color-slate-700: #475569;
+  --color-slate-600: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-400: #cbd5e1;
+  --color-slate-300: #e2e8f0;
+  --color-slate-200: #f1f5f9;
+  --color-slate-100: #ffffff;
+
+  /* Royal blue shades */
+  --color-blue-950: #0d1e3d;
+  --color-blue-900: #1e3a8a;
+  --color-blue-800: #1e40af;
+  --color-blue-700: #1d4ed8;
+  --color-blue-600: #2563eb;
+  --color-blue-500: #3b82f6;
+  --color-blue-400: #60a5fa;
+  --color-blue-300: #93c5fd;
+  --color-blue-200: #bfdbfe;
+  --color-blue-100: #dbeafe;
+
+  /* Sky blue shades */
+  --color-sky-950: #083344;
+  --color-sky-900: #0c4a6e;
+  --color-sky-800: #075985;
+  --color-sky-450: #0284c7;
+  --color-sky-400: #38bdf8;
+  --color-sky-300: #7dd3fc;
+}
+
+/* Custom scrollbars for readers and admin log panels */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
+}
+
+body, html, input, button, select, option, textarea, span, p, a, li, div {
+  font-family: "Noto Kufi Arabic", sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6,
+h1 *, h2 *, h3 *, h4 *, h5 *, h6 *,
+.font-serif-ar,
+.font-tajawal-kufi {
+  font-family: 'Noto Kufi Arabic', sans-serif !important;
+}
+
+code, pre, .font-mono, .font-mono * {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+body {
+  background-color: #020617;
+  background-image: radial-gradient(circle at top right, #0f172a 0%, #020617 100%);
+  background-attachment: fixed;
+  color: #cbd5e1;
+  direction: rtl;
+}
+
+/* Sophisticated Dark premium Glassmorphic panels */
+.glass {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 1.5rem;
+}
+
+.glass-light {
+  background: rgba(2, 6, 23, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.glass-panel-light {
+  background: rgba(2, 6, 23, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
