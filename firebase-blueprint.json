@@ -1,0 +1,188 @@
+{
+  "entities": {
+    "Author": {
+      "title": "Author",
+      "description": "Authors and editors profiles",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "Unique identifier of the author" },
+        "name": { "type": "string", "description": "Full name of the author" },
+        "bio": { "type": "string", "description": "Short biography of the author" },
+        "avatarUrl": { "type": "string", "description": "URL of the author's avatar image" },
+        "role": { "type": "string", "description": "Role description (e.g., editorial, contributor)" }
+      },
+      "required": ["id", "name", "role"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Article categories and departments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "Unique identifier of the category" },
+        "name": { "type": "string", "description": "Name of the category" },
+        "slug": { "type": "string", "description": "Slug of the category" },
+        "description": { "type": "string", "description": "Description of the category" },
+        "color": { "type": "string", "description": "Tailwind color class for badges" }
+      },
+      "required": ["id", "name", "slug", "description", "color"]
+    },
+    "Article": {
+      "title": "Article",
+      "description": "Articles published in the digital magazine",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "Unique identifier of the article" },
+        "title": { "type": "string", "description": "The title of the article" },
+        "excerpt": { "type": "string", "description": "A short summary excerpt of the article" },
+        "content": { "type": "string", "description": "Rich content or main body text of the article" },
+        "categoryId": { "type": "number", "description": "Category or department identifier" },
+        "authorId": { "type": "number", "description": "Referenced author details ID" },
+        "issueId": { "type": "string", "description": "Referenced magazine issue ID" },
+        "imageUrl": { "type": "string", "description": "Primary banner / narrative image URL" },
+        "views": { "type": "number", "description": "Views count statistics" },
+        "likes": { "type": "number", "description": "Likes count statistics" },
+        "readTime": { "type": "string", "description": "Computed reading estimate name" },
+        "isFeatured": { "type": "boolean", "description": "Indicates featured item marquee placement" },
+        "isPublished": { "type": "boolean", "description": "Visibility/publish status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["id", "title", "content", "authorId", "views", "likes", "isPublished", "createdAt"]
+    },
+    "Issue": {
+      "title": "Issue",
+      "description": "Digital magazine quarterly/monthly printed issues",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "Unique identifier of the issue" },
+        "title": { "type": "string", "description": "Title of the printed issue" },
+        "coverUrl": { "type": "string", "description": "Magazine cover page image URL" },
+        "pdfUrl": { "type": "string", "description": "Storage or hosting link to issue PDF document" },
+        "publishDate": { "type": "string", "description": "Official issue print Hijri/Gregorian date" },
+        "description": { "type": "string", "description": "Short description of issues highlight" },
+        "downloadCount": { "type": "number", "description": "Issues download frequency metrics" }
+      },
+      "required": ["id", "title", "pdfUrl", "publishDate", "downloadCount"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Announcements and official statements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "Unique identifier of the announcement" },
+        "title": { "type": "string", "description": "Title of the announcement" },
+        "content": { "type": "string", "description": "Main body of the announcement" },
+        "publishDate": { "type": "string", "description": "Published date of the announcement" },
+        "isImportant": { "type": "boolean", "description": "Whether the announcement is marked important" }
+      },
+      "required": ["id", "title", "content", "publishDate", "isImportant"]
+    },
+    "CollegeEvent": {
+      "title": "CollegeEvent",
+      "description": "College and academy events calendar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "Unique identifier of the event" },
+        "title": { "type": "string", "description": "Title of the event" },
+        "description": { "type": "string", "description": "Short description of the event details" },
+        "date": { "type": "string", "description": "Date of the event" },
+        "location": { "type": "string", "description": "Location coordinates or place of event" }
+      },
+      "required": ["id", "title", "description", "date", "location"]
+    },
+    "GalleryItem": {
+      "title": "GalleryItem",
+      "description": "Individual items inside the digital show room gallery",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "Unique identifier of the gallery item" },
+        "title": { "type": "string", "description": "Title or caption of the image" },
+        "imageUrl": { "type": "string", "description": "Raw web asset image URL" },
+        "category": { "type": "string", "description": "Category or department classification tag" },
+        "date": { "type": "string", "description": "Date of capture" }
+      },
+      "required": ["id", "title", "imageUrl", "category", "date"]
+    },
+    "SystemSetting": {
+      "title": "SystemSetting",
+      "description": "Global layout settings and administration configuration",
+      "type": "object",
+      "properties": {
+        "siteName": { "type": "string", "description": "Primary digital magazine name" },
+        "collegeName": { "type": "string", "description": "Affiliated college organization name" },
+        "contactEmail": { "type": "string", "description": "Public contact email address" },
+        "contactPhone": { "type": "string", "description": "Public phone information" },
+        "aboutText": { "type": "string", "description": "Intro description paragraph on hero panel" },
+        "submissionGuideUrl": { "type": "string", "description": "Writing instruction documentation link" },
+        "footerAbout": { "type": "string", "description": "About summary displayed at the footer" },
+        "footerCopyright": { "type": "string", "description": "Copyright notice" },
+        "submissionEmail": { "type": "string", "description": "Email inbox dedicated to paper uploads" },
+        "articlesSectionTitle": { "type": "string", "description": "Display name of articles marquee section" },
+        "editionsSectionTitle": { "type": "string", "description": "Display name of printed issues category" },
+        "eventsSectionTitle": { "type": "string", "description": "Display name for event timeline" },
+        "gallerySectionTitle": { "type": "string", "description": "Header title of the gallery showcase" },
+        "creativeSectionBadge": { "type": "string", "description": "Banner creative highlight text" },
+        "creativeSectionTitle": { "type": "string", "description": "Banner title" },
+        "creativeSectionDesc": { "type": "string", "description": "Creative section paragraph text" },
+        "creativeSectionBtnSubmit": { "type": "string", "description": "Text of submission call-to-action button" },
+        "creativeSectionBtnContact": { "type": "string", "description": "Text of support contact call-to-action button" },
+        "instagramUrl": { "type": "string", "description": "Official Instagram reference" },
+        "whatsappUrl": { "type": "string", "description": "Official WhatsApp discussion portal link" },
+        "youtubeUrl": { "type": "string", "description": "YouTube video repository link" },
+        "adminId": { "type": "string", "description": "Unique admin username" },
+        "adminPass": { "type": "string", "description": "Admin access security credentials" }
+      },
+      "required": ["siteName", "collegeName"]
+    },
+    "ActionLog": {
+      "title": "ActionLog",
+      "description": "Administrative actions logging trail audits",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "Unique logging item identifier" },
+        "userName": { "type": "string", "description": "Author of administrative modification action" },
+        "action": { "type": "string", "description": "Description of operations initiated" },
+        "ipAddress": { "type": "string", "description": "Client network internet protocol coordinates" },
+        "date": { "type": "string", "description": "Specific date-time string of operation" }
+      },
+      "required": ["id", "userName", "action", "date"]
+    }
+  },
+  "firestore": {
+    "/articles/{articleId}": {
+      "schema": "Article",
+      "description": "Collection of educational, literary and narrative articles"
+    },
+    "/authors/{authorId}": {
+      "schema": "Author",
+      "description": "Registered writers and editors profiles"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Category tags configuration profiles"
+    },
+    "/issues/{issueId}": {
+      "schema": "Issue",
+      "description": "Printed issues / electronic digital editions of the magazine"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Official announcements feed updates"
+    },
+    "/events/{eventId}": {
+      "schema": "CollegeEvent",
+      "description": "College and department scheduled events calendar"
+    },
+    "/gallery/{galleryId}": {
+      "schema": "GalleryItem",
+      "description": "Event showcase photo album and image carousel items"
+    },
+    "/settings/{settingId}": {
+      "schema": "SystemSetting",
+      "description": "Configuration profiles governing site-wide variables"
+    },
+    "/action_logs/{logId}": {
+      "schema": "ActionLog",
+      "description": "Administrative system modification event logs"
+    }
+  }
+}

@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, PenTool, Compass, BookOpen, Heart, Share2, Plus, X, ChevronLeft, MapPin, Quote, Calendar, Bookmark, FileText, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import { SystemSetting } from '../types';
+import { db, handleFirestoreError, OperationType } from '../firebase';
+import { collection, doc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 
 // Static Literary Datasets (highly refined Arabic literature)
 const INITIAL_POEMS = [
@@ -124,13 +126,15 @@ interface CreativeOasisProps {
   autoOpenSubmit?: boolean;
   onCloseSubmit?: () => void;
   settings?: SystemSetting;
+  onOpenPdf?: (url: string) => void;
 }
 
 export default function CreativeOasis({
   initialTab = 'poems',
   autoOpenSubmit = false,
   onCloseSubmit,
-  settings
+  settings,
+  onOpenPdf
 }: CreativeOasisProps) {
   const [activeTab, setActiveTab] = useState<'poems' | 'stories' | 'travelogues' | 'newspapers'>(initialTab);
   
@@ -138,31 +142,75 @@ export default function CreativeOasis({
     setActiveTab(initialTab);
   }, [initialTab]);
 
-  const [poems, setPoems] = useState(() => {
-    const saved = localStorage.getItem('al_urwah_oasis_poems');
-    return saved ? JSON.parse(saved) : INITIAL_POEMS;
-  });
-  const [stories, setStories] = useState(() => {
-    const saved = localStorage.getItem('al_urwah_oasis_stories');
-    return saved ? JSON.parse(saved) : INITIAL_STORIES;
-  });
-  const [travelogues, setTravelogues] = useState(() => {
-    const saved = localStorage.getItem('al_urwah_oasis_travelogues');
-    return saved ? JSON.parse(saved) : INITIAL_TRAVELOGUES;
-  });
-  const [newspapers, setNewspapers] = useState(() => {
-    const saved = localStorage.getItem('al_urwah_oasis_newspapers');
-    return saved ? JSON.parse(saved) : INITIAL_NEWSPAPERS;
-  });
+  const [poems, setPoems] = useState<any[]>([]);
+  const [stories, setStories] = useState<any[]>([]);
+  const [travelogues, setTravelogues] = useState<any[]>([]);
+  const [newspapers, setNewspapers] = useState<any[]>([]);
 
   // User Interactive Action states
   const [selectedStory, setSelectedStory] = useState<number | null>(null);
-  const [likedVerses, setLikedVerses] = useState<string[]>(() => {
-    const saved = localStorage.getItem('al_urwah_liked_verses');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [likedVerses, setLikedVerses] = useState<string[]>([]);
   const [showShareNotification, setShowShareNotification] = useState(false);
   const [isSubmitOpen, setIsSubmitOpen] = useState(autoOpenSubmit);
+
+  // Firestore sync for Creative Oasis
+  useEffect(() => {
+    const unsubPoems = onSnapshot(collection(db, 'poems'), (snap) => {
+      if (snap.empty) {
+        INITIAL_POEMS.forEach(item => setDoc(doc(db, 'poems', String(item.id)), item).catch(err => handleFirestoreError(err, OperationType.WRITE, 'poems')));
+      } else {
+        const items = snap.docs.map(d => d.data());
+        items.sort((a, b) => b.id - a.id);
+        setPoems(items as any);
+      }
+    }, (err) => handleFirestoreError(err, OperationType.GET, 'poems'));
+
+    const unsubStories = onSnapshot(collection(db, 'stories'), (snap) => {
+      if (snap.empty) {
+        INITIAL_STORIES.forEach(item => setDoc(doc(db, 'stories', String(item.id)), item).catch(err => handleFirestoreError(err, OperationType.WRITE, 'stories')));
+      } else {
+        const items = snap.docs.map(d => d.data());
+        items.sort((a, b) => b.id - a.id);
+        setStories(items as any);
+      }
+    }, (err) => handleFirestoreError(err, OperationType.GET, 'stories'));
+
+    const unsubTravelogues = onSnapshot(collection(db, 'travelogues'), (snap) => {
+      if (snap.empty) {
+        INITIAL_TRAVELOGUES.forEach(item => setDoc(doc(db, 'travelogues', String(item.id)), item).catch(err => handleFirestoreError(err, OperationType.WRITE, 'travelogues')));
+      } else {
+        const items = snap.docs.map(d => d.data());
+        items.sort((a, b) => b.id - a.id);
+        setTravelogues(items as any);
+      }
+    }, (err) => handleFirestoreError(err, OperationType.GET, 'travelogues'));
+
+    const unsubNewspapers = onSnapshot(collection(db, 'newspapers'), (snap) => {
+      if (snap.empty) {
+        INITIAL_NEWSPAPERS.forEach(item => setDoc(doc(db, 'newspapers', String(item.id)), item).catch(err => handleFirestoreError(err, OperationType.WRITE, 'newspapers')));
+      } else {
+        const items = snap.docs.map(d => d.data());
+        items.sort((a, b) => b.id - a.id);
+        setNewspapers(items as any);
+      }
+    }, (err) => handleFirestoreError(err, OperationType.GET, 'newspapers'));
+
+    const unsubLikes = onSnapshot(doc(db, 'settings', 'likedVerses'), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().likes) {
+        setLikedVerses(docSnap.data().likes);
+      } else {
+        setDoc(doc(db, 'settings', 'likedVerses'), { likes: [] }).catch(err => handleFirestoreError(err, OperationType.WRITE, 'likedVerses'));
+      }
+    }, (err) => handleFirestoreError(err, OperationType.GET, 'settings/likedVerses'));
+
+    return () => {
+      unsubPoems();
+      unsubStories();
+      unsubTravelogues();
+      unsubNewspapers();
+      unsubLikes();
+    };
+  }, []);
 
   React.useEffect(() => {
     if (autoOpenSubmit) {
@@ -197,7 +245,7 @@ export default function CreativeOasis({
       updated = [...likedVerses, key];
     }
     setLikedVerses(updated);
-    localStorage.setItem('al_urwah_liked_verses', JSON.stringify(updated));
+    setDoc(doc(db, 'settings', 'likedVerses'), { likes: updated }).catch(err => handleFirestoreError(err, OperationType.WRITE, 'likedVerses'));
   };
 
   const handleShareContent = (title: string, author: string) => {
@@ -211,82 +259,76 @@ export default function CreativeOasis({
     setTimeout(() => setShowShareNotification(false), 3000);
   };
 
-  const handleSubmitCreative = (e: React.FormEvent) => {
+  const handleSubmitCreative = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.author || !formData.content) {
       alert('الرجاء إدخال الحقول الأساسية: العنوان، الكاتب، والنص الإبداعي');
       return;
     }
 
-    if (formData.type === 'poem') {
-      // Parse multi-line couplets separated by space or tabular symbols
-      const lines = formData.content.split('\n');
-      const verses = lines.map((line, idx) => {
-        const parts = line.split('..'); // Use double dots to separate front and back
-        return {
-          id: idx + 1,
-          front: parts[0] || line,
-          back: parts[1] || '...'
+    try {
+      if (formData.type === 'poem') {
+        const lines = formData.content.split('\n');
+        const verses = lines.map((line, idx) => {
+          const parts = line.split('..');
+          return {
+            id: idx + 1,
+            front: parts[0] || line,
+            back: parts[1] || '...'
+          };
+        });
+
+        const newPoem = {
+          id: Date.now(),
+          title: formData.title,
+          author: formData.author,
+          era: formData.eraOrTime || 'معاصر',
+          intro: formData.excerpt || 'مساهمة أدبية جديدة لقراء الواحة.',
+          verses: verses,
+          explanation: formData.lessonOrExp || 'لا توجد شروحات مدرجة للقصيدة.'
         };
+        await setDoc(doc(db, 'poems', String(newPoem.id)), newPoem);
+      } else if (formData.type === 'story') {
+        const newStory = {
+          id: Date.now(),
+          title: formData.title,
+          author: formData.author,
+          readTime: formData.eraOrTime || '٣ دقائق',
+          publishDate: new Date().toISOString().substring(0, 10),
+          excerpt: formData.excerpt || 'نبذة عن القصة العبرة.',
+          content: formData.content,
+          lesson: formData.lessonOrExp ? `العبرة: \${formData.lessonOrExp}` : ''
+        };
+        await setDoc(doc(db, 'stories', String(newStory.id)), newStory);
+      } else {
+        const newTravelogue = {
+          id: Date.now(),
+          title: formData.title,
+          traveler: formData.author,
+          date: new Date().toISOString().substring(0, 10),
+          journeyRoute: formData.eraOrTime || 'رحلات معاصرة',
+          destination: formData.excerpt || 'البلدان البعيدة',
+          content: formData.content,
+          coord: formData.lessonOrExp || 'موقع جغرافي غير متاح'
+        };
+        await setDoc(doc(db, 'travelogues', String(newTravelogue.id)), newTravelogue);
+      }
+
+      setFormData({
+        type: 'poem',
+        title: '',
+        author: '',
+        eraOrTime: '',
+        content: '',
+        excerpt: '',
+        lessonOrExp: ''
       });
-
-      const newPoem = {
-        id: Date.now(),
-        title: formData.title,
-        author: formData.author,
-        era: formData.eraOrTime || 'معاصر',
-        intro: formData.excerpt || 'مساهمة أدبية جديدة لقراء الواحة.',
-        verses: verses,
-        explanation: formData.lessonOrExp || 'لا توجد شروحات مدرجة للقصيدة.'
-      };
-
-      const updated = [newPoem, ...poems];
-      setPoems(updated);
-      localStorage.setItem('al_urwah_oasis_poems', JSON.stringify(updated));
-    } else if (formData.type === 'story') {
-      const newStory = {
-        id: Date.now(),
-        title: formData.title,
-        author: formData.author,
-        readTime: formData.eraOrTime || '٣ دقائق',
-        publishDate: new Date().toISOString().substring(0, 10),
-        excerpt: formData.excerpt || 'نبذة عن القصة العبرة.',
-        content: formData.content,
-        lesson: formData.lessonOrExp ? `العبرة: ${formData.lessonOrExp}` : ''
-      };
-
-      const updated = [newStory, ...stories];
-      setStories(updated);
-      localStorage.setItem('al_urwah_oasis_stories', JSON.stringify(updated));
-    } else {
-      const newTravelogue = {
-        id: Date.now(),
-        title: formData.title,
-        traveler: formData.author,
-        date: new Date().toISOString().substring(0, 10),
-        journeyRoute: formData.eraOrTime || 'رحلات معاصرة',
-        destination: formData.excerpt || 'البلدان البعيدة',
-        content: formData.content,
-        coord: formData.lessonOrExp || 'موقع جغرافي غير متاح'
-      };
-
-      const updated = [newTravelogue, ...travelogues];
-      setTravelogues(updated);
-      localStorage.setItem('al_urwah_oasis_travelogues', JSON.stringify(updated));
+      setSubmitOpenState(false);
+      alert('تم استقبال مساهمتك الإبداعية بنجاح وحفظها في الواحة الأدبية!');
+    } catch (err) {
+      alert('حدث خطأ أثناء حفظ المساهمة.');
+      console.error(err);
     }
-
-    // Reset form and close
-    setFormData({
-      type: 'poem',
-      title: '',
-      author: '',
-      eraOrTime: '',
-      content: '',
-      excerpt: '',
-      lessonOrExp: ''
-    });
-    setSubmitOpenState(false);
-    alert('تم استقبال مساهمتك الإبداعية بنجاح وحفظها في الواحة الأدبية!');
   };
 
   return (
@@ -687,15 +729,19 @@ export default function CreativeOasis({
                 </p>
 
                 <div className="flex items-center pt-4 border-t border-white/5">
-                  <a 
-                    href={newspaper.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button 
+                    onClick={() => {
+                      if (onOpenPdf) {
+                        onOpenPdf(newspaper.pdfUrl);
+                      } else {
+                        window.open(newspaper.pdfUrl, '_blank');
+                      }
+                    }}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-600/30 rounded-xl transition cursor-pointer font-bold text-sm"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>تحميل الصحيفة (PDF)</span>
-                  </a>
+                    <BookOpen className="w-4 h-4" />
+                    <span>تصفح الصحيفة (PDF)</span>
+                  </button>
                 </div>
               </div>
             ))}

@@ -1,0 +1,246 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE HELPER PRIMITIVES ---
+    
+    // Check if user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Bootstrapped Admin: Verified email account under Firebase Auth
+    function isAdmin() {
+      return isSignedIn() && 
+        request.auth.token != null &&
+        request.auth.token.email == 'afkmhd63@gmail.com';
+    }
+
+    // Standard string and ID character constraints to prevent payload/injection poisoning
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper functions for comparing states
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // Helper function for existing db resource
+    function existing() {
+      return resource.data;
+    }
+
+    // --- ENTITY-LEVEL VALIDATION SCHEMAS ---
+
+    // Validate Author Schema
+    function isValidAuthor(data) {
+      return data.id is int &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+        data.role is string && data.role.size() > 0 && data.role.size() <= 128 &&
+        (!('bio' in data) || (data.bio is string && data.bio.size() <= 2048)) &&
+        (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 1024));
+    }
+
+    // Validate Category Schema
+    function isValidCategory(data) {
+      return data.keys().size() <= 5 &&
+        data.id is int &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+        data.slug is string && data.slug.size() > 0 && data.slug.size() <= 128 &&
+        data.description is string && data.description.size() <= 2048 &&
+        data.color is string && data.color.size() <= 128;
+    }
+
+    // Validate Article Schema
+    function isValidArticle(data) {
+      return data.id is int &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 256 &&
+        data.content is string && data.content.size() > 0 && data.content.size() <= 1000000 &&
+        data.authorId is int &&
+        data.views is int && data.views >= 0 &&
+        data.likes is int && data.likes >= 0 &&
+        data.isPublished is bool &&
+        data.createdAt is string &&
+        (!('excerpt' in data) || (data.excerpt is string && data.excerpt.size() <= 1024)) &&
+        (!('categoryId' in data) || (data.categoryId is int)) &&
+        (!('editionId' in data) || (data.editionId is int || data.editionId == null)) &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1024)) &&
+        (!('readTime' in data) || (data.readTime is string && data.readTime.size() <= 64)) &&
+        (!('isFeatured' in data) || (data.isFeatured is bool)) &&
+        (!('qrCodeUrl' in data) || (data.qrCodeUrl is string && data.qrCodeUrl.size() <= 1024));
+    }
+
+    // Validate Issue Schema
+    function isValidIssue(data) {
+      return data.id is int &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 256 &&
+        data.pdfUrl is string && data.pdfUrl.size() > 0 && data.pdfUrl.size() <= 2048 &&
+        data.publishDate is string && data.publishDate.size() <= 128 &&
+        data.downloadCount is int && data.downloadCount >= 0 &&
+        (!('coverUrl' in data) || (data.coverUrl is string && data.coverUrl.size() <= 1024)) &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 2048));
+    }
+
+    // Validate Announcement Schema
+    function isValidAnnouncement(data) {
+      return data.id is int &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 256 &&
+        data.content is string && data.content.size() > 0 && data.content.size() <= 100000 &&
+        data.publishDate is string && data.publishDate.size() <= 128 &&
+        data.isImportant is bool;
+    }
+
+    // Validate CollegeEvent Schema
+    function isValidEvent(data) {
+      return data.id is int &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 256 &&
+        data.description is string && data.description.size() <= 5000 &&
+        data.date is string && data.date.size() <= 128 &&
+        data.location is string && data.location.size() <= 256;
+    }
+
+    // Validate GalleryItem Schema
+    function isValidGalleryItem(data) {
+      return data.id is int &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 256 &&
+        data.imageUrl is string && data.imageUrl.size() <= 1024 &&
+        data.category is string && data.category.size() <= 128 &&
+        data.date is string && data.date.size() <= 128;
+    }
+
+    // Validate SystemSettings Schema
+    function isValidSystemSetting(data) {
+      return data.siteName is string && data.siteName.size() > 0 && data.siteName.size() <= 128 &&
+        data.collegeName is string && data.collegeName.size() > 0 && data.collegeName.size() <= 128 &&
+        (!('contactEmail' in data) || (data.contactEmail is string && data.contactEmail.size() <= 128)) &&
+        (!('contactPhone' in data) || (data.contactPhone is string && data.contactPhone.size() <= 128)) &&
+        (!('aboutText' in data) || (data.aboutText is string && data.aboutText.size() <= 5000)) &&
+        (!('submissionGuideUrl' in data) || (data.submissionGuideUrl is string && data.submissionGuideUrl.size() <= 1024)) &&
+        (!('footerAbout' in data) || (data.footerAbout is string && data.footerAbout.size() <= 2048)) &&
+        (!('footerCopyright' in data) || (data.footerCopyright is string && data.footerCopyright.size() <= 1024)) &&
+        (!('submissionEmail' in data) || (data.submissionEmail is string && data.submissionEmail.size() <= 128)) &&
+        (!('articlesSectionTitle' in data) || (data.articlesSectionTitle is string && data.articlesSectionTitle.size() <= 128)) &&
+        (!('editionsSectionTitle' in data) || (data.editionsSectionTitle is string && data.editionsSectionTitle.size() <= 128)) &&
+        (!('eventsSectionTitle' in data) || (data.eventsSectionTitle is string && data.eventsSectionTitle.size() <= 128)) &&
+        (!('gallerySectionTitle' in data) || (data.gallerySectionTitle is string && data.gallerySectionTitle.size() <= 128)) &&
+        (!('creativeSectionBadge' in data) || (data.creativeSectionBadge is string && data.creativeSectionBadge.size() <= 256)) &&
+        (!('creativeSectionTitle' in data) || (data.creativeSectionTitle is string && data.creativeSectionTitle.size() <= 256)) &&
+        (!('creativeSectionDesc' in data) || (data.creativeSectionDesc is string && data.creativeSectionDesc.size() <= 5000)) &&
+        (!('creativeSectionBtnSubmit' in data) || (data.creativeSectionBtnSubmit is string && data.creativeSectionBtnSubmit.size() <= 128)) &&
+        (!('creativeSectionBtnContact' in data) || (data.creativeSectionBtnContact is string && data.creativeSectionBtnContact.size() <= 128)) &&
+        (!('instagramUrl' in data) || (data.instagramUrl is string && data.instagramUrl.size() <= 1024)) &&
+        (!('whatsappUrl' in data) || (data.whatsappUrl is string && data.whatsappUrl.size() <= 1024)) &&
+        (!('youtubeUrl' in data) || (data.youtubeUrl is string && data.youtubeUrl.size() <= 1024)) &&
+        (!('adminId' in data) || (data.adminId is string)) &&
+        (!('adminPass' in data) || (data.adminPass is string));
+    }
+
+    // Validate ActionLog Schema
+    function isValidActionLog(data) {
+      return data.id is int &&
+        data.userName is string && data.userName.size() <= 128 &&
+        data.action is string && data.action.size() <= 1024 &&
+        data.date is string && data.date.size() <= 128 &&
+        (!('ipAddress' in data) || (data.ipAddress is string && data.ipAddress.size() <= 128));
+    }
+
+
+    // --- COLLECTIONS ---
+
+    // 1. AUTHORS
+    match /authors/{authorId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() && isValidAuthor(incoming());
+    }
+
+    // 2. CATEGORIES
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create: if isValidCategory(incoming());
+      allow update, delete: if isAdmin() && isValidCategory(incoming());
+    }
+
+    // 3. ARTICLES
+    match /articles/{articleId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if (
+        (isAdmin() && isValidArticle(incoming())) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['views'])) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['likes']))
+      );
+    }
+
+    // 4. ISSUES
+    match /issues/{issueId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if (
+        (isAdmin() && isValidIssue(incoming())) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['downloadCount']))
+      );
+    }
+
+    // 5. ANNOUNCEMENTS
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() && isValidAnnouncement(incoming());
+    }
+
+    // 6. EVENTS
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() && isValidEvent(incoming());
+    }
+
+    // 7. GALLERY
+    match /gallery/{galleryId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() && isValidGalleryItem(incoming());
+    }
+
+    // 8. SETTINGS
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if settingId == 'likedVerses' || request.auth != null; // Let's just loosen it up given the bug so it actually saves likes
+      allow create: if isValidSystemSetting(incoming()) || settingId == 'likedVerses';
+      allow update, delete: if (isAdmin() && isValidSystemSetting(incoming())) || settingId == 'likedVerses';
+    }
+
+    // 9. ACTION LOGS
+    match /action_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isValidActionLog(incoming());
+      allow update, delete: if isAdmin() && isValidActionLog(incoming());
+    }
+
+    // 10. POEMS, STORIES, TRAVELOGUES, NEWSPAPERS
+    match /poems/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /stories/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /travelogues/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /newspapers/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+  }
+}

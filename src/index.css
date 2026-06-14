@@ -2,6 +2,76 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&family=Noto+Sans+Arabic:wght@100..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
+:root {
+  /* LIGHT MODE (DEFAULT) */
+  --page-bg: #f8fafc;
+  --page-grad: radial-gradient(circle at top right, #ffffff 0%, #f8fafc 100%);
+  --text-base: #1e293b;
+
+  /* Inverted Slate Scale for Light Mode */
+  --slate-950: #ffffff;
+  --slate-905: #f1f5f9;
+  --slate-900: #ffffff;
+  --slate-850: #f1f5f9;
+  --slate-800: #e2e8f0;
+  --slate-750: #cbd5e1;
+  --slate-700: #94a3b8;
+  --slate-600: #64748b;
+  --slate-500: #475569;
+  --slate-400: #334155;
+  --slate-300: #1e293b;
+  --slate-200: #0f172a;
+  --slate-100: #020617;
+
+  /* Glass in Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(29, 78, 216, 0.12);
+  --glass-bg-light: rgba(255, 255, 255, 0.9);
+  --glass-border-light: rgba(29, 78, 216, 0.15);
+
+  /* Scrollbar Light Mode */
+  --scroll-track: #f1f5f9;
+  --scroll-thumb: #cbd5e1;
+  --scroll-hover: #2563eb;
+  
+  --blue-hover: rgba(239, 246, 255, 0.5); /* blue-50/50 */
+}
+
+html.dark {
+  /* DARK MODE */
+  --page-bg: #020617;
+  --page-grad: radial-gradient(circle at top right, #0f172a 0%, #020617 100%);
+  --text-base: #cbd5e1;
+
+  /* Original Slate Scale for Dark Mode */
+  --slate-950: #0a1128;
+  --slate-905: #0e1836;
+  --slate-900: #020617;
+  --slate-850: #0f172a;
+  --slate-800: #1e293b;
+  --slate-750: #334155;
+  --slate-700: #475569;
+  --slate-600: #64748b;
+  --slate-500: #94a3b8;
+  --slate-400: #cbd5e1;
+  --slate-300: #e2e8f0;
+  --slate-200: #f1f5f9;
+  --slate-100: #ffffff;
+
+  /* Glass in Dark Mode */
+  --glass-bg: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(59, 130, 246, 0.15);
+  --glass-bg-light: rgba(2, 6, 23, 0.9);
+  --glass-border-light: rgba(59, 130, 246, 0.2);
+
+  /* Scrollbar Dark Mode */
+  --scroll-track: #020617;
+  --scroll-thumb: #1e293b;
+  --scroll-hover: #3b82f6;
+
+  --blue-hover: rgba(7, 13, 30, 0.4); /* blue-950/40 */
+}
+
 @theme {
   --font-tajawal: "Noto Kufi Arabic", "Inter", sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -11,20 +81,20 @@
   --color-brand-blue-900: #0a1128;
   --color-brand-blue-800: #1c2a4f;
   
-  /* Modern High-Legibility Dark Slate Scale (Fully matching dark mode palette) */
-  --color-slate-950: #0a1128;
-  --color-slate-905: #0e1836;
-  --color-slate-900: #020617;
-  --color-slate-850: #0f172a;
-  --color-slate-800: #1e293b;
-  --color-slate-750: #334155;
-  --color-slate-700: #475569;
-  --color-slate-600: #64748b;
-  --color-slate-500: #94a3b8;
-  --color-slate-400: #cbd5e1;
-  --color-slate-300: #e2e8f0;
-  --color-slate-200: #f1f5f9;
-  --color-slate-100: #ffffff;
+  /* Map Tailwind vars to our semantic CSS variables */
+  --color-slate-950: var(--slate-950);
+  --color-slate-905: var(--slate-905);
+  --color-slate-900: var(--slate-900);
+  --color-slate-850: var(--slate-850);
+  --color-slate-800: var(--slate-800);
+  --color-slate-750: var(--slate-750);
+  --color-slate-700: var(--slate-700);
+  --color-slate-600: var(--slate-600);
+  --color-slate-500: var(--slate-500);
+  --color-slate-400: var(--slate-400);
+  --color-slate-300: var(--slate-300);
+  --color-slate-200: var(--slate-200);
+  --color-slate-100: var(--slate-100);
 
   /* Royal blue shades */
   --color-blue-950: #0d1e3d;
@@ -54,17 +124,17 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617;
+  background: var(--scroll-track);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--scroll-thumb);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
+  background: var(--scroll-hover);
 }
 
 body, html, input, button, select, option, textarea, span, p, a, li, div {
@@ -83,39 +153,58 @@ code, pre, .font-mono, .font-mono * {
 }
 
 body {
-  background-color: #020617;
-  background-image: radial-gradient(circle at top right, #0f172a 0%, #020617 100%);
+  background-color: var(--page-bg);
+  background-image: var(--page-grad);
   background-attachment: fixed;
-  color: #cbd5e1;
+  color: var(--text-base);
   direction: rtl;
 }
 
-/* Sophisticated Dark premium Glassmorphic panels */
+/* Sophisticated premium Glassmorphic panels */
 .glass {
-  background: rgba(15, 23, 42, 0.75);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(59, 130, 246, 0.15);
+  border: 1px solid var(--glass-border);
   border-radius: 1.5rem;
 }
 
 .glass-light {
-  background: rgba(2, 6, 23, 0.9);
+  background: var(--glass-bg-light);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid var(--glass-border-light);
 }
 
 .glass-panel {
-  background: rgba(15, 23, 42, 0.75);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(59, 130, 246, 0.15);
+  border: 1px solid var(--glass-border);
 }
 
 .glass-panel-light {
-  background: rgba(2, 6, 23, 0.9);
+  background: var(--glass-bg-light);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid var(--glass-border-light);
+}
+
+.prose {
+  --tw-prose-body: var(--text-base) !important;
+  --tw-prose-headings: var(--text-base) !important;
+  --tw-prose-lead: var(--slate-400) !important;
+  --tw-prose-links: var(--color-blue-500) !important;
+  --tw-prose-bold: var(--text-base) !important;
+  --tw-prose-counters: var(--slate-500) !important;
+  --tw-prose-bullets: var(--slate-500) !important;
+  --tw-prose-hr: var(--slate-800) !important;
+  --tw-prose-quotes: var(--text-base) !important;
+  --tw-prose-quote-borders: var(--slate-800) !important;
+  --tw-prose-captions: var(--slate-400) !important;
+  --tw-prose-code: var(--text-base) !important;
+  --tw-prose-pre-code: var(--text-base) !important;
+  --tw-prose-pre-bg: var(--slate-950) !important;
+  --tw-prose-th-borders: var(--slate-800) !important;
+  --tw-prose-td-borders: var(--slate-800) !important;
 }

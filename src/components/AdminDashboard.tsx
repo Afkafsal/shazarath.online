@@ -7,9 +7,11 @@ import React, { useState } from 'react';
 import { 
   BarChart3, Newspaper, BookOpen, Users, FolderKanban, 
   Settings2, ClipboardList, Plus, Trash2, Edit2, 
-  Save, Eye, CheckCircle2, AlertTriangle, HelpCircle, Flame, Check, Sparkles
+  Save, Eye, CheckCircle2, AlertTriangle, HelpCircle, Flame, Check, Sparkles, UploadCloud
 } from 'lucide-react';
 import { Article, Author, Category, Edition, Announcement, CollegeEvent, GalleryItem, ActivityLog, SystemSetting } from '../types';
+import TiptapEditor from './TiptapEditor';
+import { uploadFileToStorage, resizeAndConvertToWebP, uploadJsonToStorage } from '../fileUpload';
 
 interface AdminDashboardProps {
   articles: Article[];
@@ -41,12 +43,60 @@ export default function AdminDashboard({
   onUpdateEvents, onUpdateGallery, onUpdateSettings, onAddLog
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [uploadsInProgress, setUploadsInProgress] = useState<Record<string, number>>({});
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string, setter: (url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadsInProgress(prev => ({ ...prev, [fieldName]: 0 }));
+      const webpFile = await resizeAndConvertToWebP(file);
+      const url = await uploadFileToStorage(webpFile, `images/${Date.now()}_${webpFile.name}`, {
+        onProgress: (p) => setUploadsInProgress(prev => ({ ...prev, [fieldName]: p }))
+      });
+      setter(url);
+    } catch (err) {
+      alert('فشل رفع الصورة: ' + (err as Error).message);
+    } finally {
+      setUploadsInProgress(prev => {
+        const newObj = { ...prev };
+        delete newObj[fieldName];
+        return newObj;
+      });
+    }
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string, setter: (url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('يجب أن يكون الملف بصيغة PDF');
+      return;
+    }
+    
+    try {
+      setUploadsInProgress(prev => ({ ...prev, [fieldName]: 0 }));
+      const url = await uploadFileToStorage(file, `pdfs/${Date.now()}_${file.name}`, {
+        maxSizeMB: 100,
+        onProgress: (p) => setUploadsInProgress(prev => ({ ...prev, [fieldName]: p }))
+      });
+      setter(url);
+    } catch (err) {
+      alert('فشل رفع الملف: ' + (err as Error).message);
+    } finally {
+      setUploadsInProgress(prev => {
+        const newObj = { ...prev };
+        delete newObj[fieldName];
+        return newObj;
+      });
+    }
+  };
 
   // Article Form state
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const [artTitle, setArtTitle] = useState('');
   const [artExcerpt, setArtExcerpt] = useState('');
-  const [artContent, setArtContent] = useState('');
+  const [artContent, setArtContent] = useState<any>('');
   const [artCategory, setArtCategory] = useState<number>(categories[0]?.id || 1);
   const [artAuthor, setArtAuthor] = useState<number>(authors[0]?.id || 1);
   const [artEdition, setArtEdition] = useState<number | 'none'>('none');
@@ -121,8 +171,8 @@ export default function AdminDashboard({
   const [setInstagramUrl, setSetInstagramUrl] = useState(settings.instagramUrl || 'https://www.instagram.com/shadharat_kms');
   const [setWhatsappUrl, setSetWhatsappUrl] = useState(settings.whatsappUrl || 'https://whatsapp.com/channel/0029Shadh');
   const [setYoutubeUrl, setSetYoutubeUrl] = useState(settings.youtubeUrl || 'https://www.youtube.com/@shadharat_kms');
-  const [setAdminId, setSetAdminId] = useState(settings.adminId || 'admin');
-  const [setAdminPass, setSetAdminPass] = useState(settings.adminPass || 'admin123');
+  const [setAdminId, setSetAdminId] = useState(settings.adminId || '');
+  const [setAdminPass, setSetAdminPass] = useState(settings.adminPass || '');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Custom Deletion Confirmation Modal State (replaces confirm dialogs)
@@ -135,19 +185,25 @@ export default function AdminDashboard({
 
   // Function to run Arabic Spellchecking algorithm
   const handleSpellcheck = () => {
-    if (!artContent.trim()) return;
+    let textToSpellCheck = '';
+    if (typeof artContent === 'string') {
+      textToSpellCheck = artContent;
+    } else if (typeof artContent === 'object' && artContent !== null) {
+      // Very basic text extraction if it's a Tiptap JSON node
+      try {
+        textToSpellCheck = JSON.stringify(artContent);
+      } catch (e) {
+        textToSpellCheck = '';
+      }
+    }
+
+    if (!textToSpellCheck.trim()) return;
     setSpellCheckRunning(true);
     setSpellcheckerResult([]);
     
     setTimeout(() => {
       const results: typeof spellcheckerResult = [];
-      
-      // Look for common Arabic typography spelling issues
-      if (artContent.includes('بسم الله الرحمن الرحيم')) {
-        // Correct, but let's audit some misspelled common words
-      }
-      
-      const words = artContent.split(/\s+/);
+      const words = textToSpellCheck.split(/\s+/);
       
       words.forEach((word, idx) => {
         // Rule 1: Incorrect Hamza seating (e.g. احمد -> أحمد, انشور -> انشر)
@@ -198,9 +254,9 @@ export default function AdminDashboard({
   };
 
   // Article Action Submit
-  const handleSaveArticle = (e: React.FormEvent) => {
+  const handleSaveArticle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!artTitle.trim() || !artContent.trim()) return;
+    if (!artTitle.trim() || !artContent) return;
 
     let finalAuthorId = Number(artAuthor);
     if (showQuickAddAuthor) {
@@ -220,6 +276,17 @@ export default function AdminDashboard({
       finalAuthorId = newAuthorId;
     }
 
+    // Upload JSON content if it's an object
+    let finalContentUrlOrString = artContent;
+    if (typeof artContent === 'object' && artContent !== null) {
+      try {
+        finalContentUrlOrString = await uploadJsonToStorage(artContent, `articles/${Date.now()}.json`);
+      } catch (err) {
+        alert('فشل رفع محتوى المقال: ' + (err as Error).message);
+        return;
+      }
+    }
+
     if (editingArticleId !== null) {
       // Edit mode
       const updated = articles.map(item => {
@@ -228,7 +295,7 @@ export default function AdminDashboard({
             ...item,
             title: artTitle,
             excerpt: artExcerpt || artTitle.substring(0, 80) + '...',
-            content: artContent,
+            content: finalContentUrlOrString,
             categoryId: Number(artCategory),
             authorId: finalAuthorId,
             editionId: artEdition === 'none' ? null : Number(artEdition),
@@ -249,7 +316,7 @@ export default function AdminDashboard({
         id: Date.now(),
         title: artTitle,
         excerpt: artExcerpt || artTitle.substring(0, 80) + '...',
-        content: artContent,
+        content: finalContentUrlOrString,
         categoryId: Number(artCategory),
         authorId: finalAuthorId,
         editionId: artEdition === 'none' ? null : Number(artEdition),
@@ -706,36 +773,23 @@ export default function AdminDashboard({
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs text-slate-400 block font-bold">ملف الصورة الشخصية للكاتب *</label>
-                          <div className="flex gap-2.5 items-center">
+                          <label className="text-xs text-slate-400 block font-bold">رفع الصورة الشخصية للكاتب</label>
+                          <div className="flex items-center gap-3">
                             <input
                               type="file"
                               accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files && e.target.files[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    setQuickAuthAvatar(reader.result as string);
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              }}
+                              onChange={(e) => handleImageUpload(e, 'quickAuthAvatar', setQuickAuthAvatar)}
                               className="hidden"
-                              id="quick-author-avatar-file"
+                              id="quickAuthAvatarInput"
                             />
-                            <label
-                              htmlFor="quick-author-avatar-file"
-                              className="bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs px-4 py-3 rounded-xl cursor-pointer text-center flex-1 transition shrink-0 shadow-md hover:shadow-lg"
-                            >
-                              {quickAuthAvatar ? '✓ تم رفع الصورة بنجاح' : 'اختر صورة الكاتب'}
+                            <label htmlFor="quickAuthAvatarInput" className="cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs px-4 py-3 rounded-xl border border-slate-800 flex items-center justify-center gap-2 flex-grow transition">
+                              <UploadCloud className="w-4 h-4" />
+                              {uploadsInProgress['quickAuthAvatar'] !== undefined 
+                                ? `جاري الرفع... ${Math.round(uploadsInProgress['quickAuthAvatar'])}%` 
+                                : 'اختر صورة من جهازك'}
                             </label>
                             {quickAuthAvatar && (
-                              <img
-                                src={quickAuthAvatar}
-                                alt="صورة الكاتب"
-                                className="w-10 h-10 rounded-full object-cover border-2 border-blue-500 shrink-0"
-                              />
+                              <img src={quickAuthAvatar} alt="صورة الكاتب" className="w-10 h-10 object-cover rounded-full border border-slate-700" />
                             )}
                           </div>
                         </div>
@@ -743,46 +797,27 @@ export default function AdminDashboard({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5 font-bold">
-                      <label className="text-xs text-slate-400 font-bold block">رابط الصورة التعبيرية للمقال (URL)</label>
+                  <div className="space-y-1.5 font-bold">
+                    <label className="text-xs text-slate-400 font-bold block">رفع الصورة التعبيرية للمقال</label>
+                    <div className="flex items-center gap-3">
                       <input
-                        type="url"
-                        value={artImageUrl}
-                        onChange={(e) => setArtImageUrl(e.target.value)}
-                        placeholder="https://images.unsplash.com/photo-..."
-                        className="w-full bg-slate-950 border border-slate-800 focus:border-blue-600 text-slate-200 text-sm p-3 rounded-xl ltr outline-none"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, 'artImageUrl', setArtImageUrl)}
+                        className="hidden"
+                        id="artImageUrlInput"
                       />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-slate-400 font-bold block">أو إرفاق/رفع صورة من جهاز الكمبيوتر</label>
-                      <label className="w-full border border-dashed border-slate-800 hover:border-blue-600 bg-slate-950 rounded-xl p-3 text-center text-xs font-semibold block cursor-pointer transition">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              if (file.size > 25 * 1024 * 1024) {
-                                alert('حجم الصورة كبير للغاية! يرجى اختيار صورة أصغر من ٢٥ ميغابايت.');
-                                return;
-                              }
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setArtImageUrl(reader.result as string);
-                                onAddLog(`رفع وإرفاق ملف صورة من الجهاز للمقال: "${file.name}"`);
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                        {artImageUrl?.startsWith('data:') ? (
-                          <span className="text-emerald-400 block font-bold">✓ تم إرفاق الصورة المرفوعة من الجهاز بنجاح!</span>
-                        ) : (
-                          <span className="text-slate-400 block">انقر لتحديد ورفع ملف صورة محلي</span>
-                        )}
+                      <label htmlFor="artImageUrlInput" className="cursor-pointer w-full text-center bg-slate-900 border border-slate-800 hover:border-blue-600 text-slate-200 text-sm p-3 rounded-xl flex items-center justify-center gap-2 transition">
+                        <UploadCloud className="w-5 h-5" />
+                        {uploadsInProgress['artImageUrl'] !== undefined 
+                          ? `جاري الرفع... ${Math.round(uploadsInProgress['artImageUrl'])}%` 
+                          : 'اضغط هنا لاختيار صورة المقال الرئيسية'}
                       </label>
+                      {artImageUrl && (
+                        <div className="shrink-0 relative w-12 h-12 rounded-lg overflow-hidden border border-slate-700">
+                          <img src={artImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -815,13 +850,9 @@ export default function AdminDashboard({
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                       {/* Editor inputs */}
                       <div className="lg:col-span-3">
-                        <textarea
-                          rows={12}
-                          required
-                          value={artContent}
-                          onChange={(e) => setArtContent(e.target.value)}
-                          placeholder="اكتب المقال الأدبي أو الشرعي هنا بأسلوب بليغ وجميل مع الحفاظ على الفواصل وهياكل الفقرات..."
-                          className="w-full bg-slate-950 border border-slate-800 focus:border-blue-600 text-slate-200 text-sm p-4 rounded-xl outline-none font-medium leading-relaxed"
+                        <TiptapEditor 
+                          content={artContent} 
+                          onChange={(json) => setArtContent(json)} 
                         />
                       </div>
 
@@ -1142,14 +1173,25 @@ export default function AdminDashboard({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs text-slate-400 font-bold block">رابط الصورة الشخصية (Avatar URL)</label>
-                      <input
-                        type="url"
-                        value={authAvatar}
-                        onChange={(e) => setAuthAvatar(e.target.value)}
-                        placeholder="https://images.unsplash.com/..."
-                        className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl ltr outline-none"
-                      />
+                      <label className="text-xs text-slate-400 font-bold block">رفع الصورة الشخصية</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, 'authAvatar', setAuthAvatar)}
+                          className="hidden"
+                          id="authAvatarInput"
+                        />
+                        <label htmlFor="authAvatarInput" className="cursor-pointer bg-slate-900 border border-slate-800 hover:border-blue-600 text-slate-200 text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 flex-grow transition">
+                          <UploadCloud className="w-4 h-4" />
+                          {uploadsInProgress['authAvatar'] !== undefined 
+                            ? `جاري الرفع... ${Math.round(uploadsInProgress['authAvatar'])}%` 
+                            : 'رفع صورة'}
+                        </label>
+                        {authAvatar && (
+                          <img src={authAvatar} alt="معاينة" className="w-11 h-11 object-cover rounded-full border border-slate-700" />
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -1250,50 +1292,46 @@ export default function AdminDashboard({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs text-slate-400 font-bold block">رابط غلاف العدد المطبوع (عرض 400x560)</label>
-                      <input
-                        type="url"
-                        value={edCover}
-                        onChange={(e) => setEdCover(e.target.value)}
-                        placeholder="https://images.unsplash.com/photo-..."
-                        className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl ltr outline-none"
-                      />
+                      <label className="text-xs text-slate-400 font-bold block">رفع غلاف العدد المطبوع (عرض 400x560)</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, 'edCover', setEdCover)}
+                          className="hidden"
+                          id="edCoverInput"
+                        />
+                        <label htmlFor="edCoverInput" className="cursor-pointer bg-slate-900 border border-slate-800 hover:border-blue-600 text-slate-200 text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 flex-grow transition">
+                          <UploadCloud className="w-4 h-4" />
+                          {uploadsInProgress['edCover'] !== undefined 
+                            ? `جاري الرفع... ${Math.round(uploadsInProgress['edCover'])}%` 
+                            : 'رفع صورة الغلاف'}
+                        </label>
+                        {edCover && (
+                          <img src={edCover} alt="معاينة" className="w-8 h-12 object-cover rounded border border-slate-700" />
+                        )}
+                      </div>
                     </div>
                     <div className="space-y-1.5">
-                      <div className="flex justify-between items-center">
-                        <label className="text-xs text-slate-400 font-bold">ملف العدد ككتيب PDF محمل ومباشر *</label>
-                        <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded">الحد الأقصى: ١٥٠ ميغابايت</span>
-                      </div>
-                      <label className="w-full border-2 border-dashed border-slate-800 hover:border-blue-600 bg-slate-950 rounded-xl p-3 text-center text-xs font-semibold block cursor-pointer transition">
+                      <label className="text-xs text-slate-400 font-bold block">رفع ملف العدد المطبوع PDF *</label>
+                      <div className="flex items-center gap-3">
                         <input
                           type="file"
                           accept="application/pdf"
+                          onChange={(e) => handlePdfUpload(e, 'edPdfFileBase64', setEdPdfFileBase64)}
                           className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              if (file.size > 150 * 1024 * 1024) {
-                                alert('تجاوز حجم الملف الحد الأقصى المسموح به (١٥٠ ميغابايت)!');
-                                return;
-                              }
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setEdPdfFileBase64(reader.result as string);
-                                onAddLog(`تجهيز وإرفاق ملف العدد كـ PDF: "${file.name}"`);
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
+                          id="edPdfInput"
                         />
-                        {edPdfFileBase64 ? (
-                          <span className="text-emerald-400 block mb-1 font-bold">✓ تم إرفاق ملف الـ PDF بنجاح وبسرعة فائقة!</span>
-                        ) : (
-                          <span className="text-slate-400 block mb-1">انقر لاختيار وإرفاق ملف PDF من جهازك ومحرك الأقراص</span>
+                        <label htmlFor="edPdfInput" className="cursor-pointer bg-slate-900 border border-slate-800 hover:border-blue-600 text-slate-200 text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 flex-grow transition">
+                          <UploadCloud className="w-4 h-4" />
+                          {uploadsInProgress['edPdfFileBase64'] !== undefined 
+                            ? `جاري الرفع... ${Math.round(uploadsInProgress['edPdfFileBase64'])}%` 
+                            : 'اختر ملف PDF'}
+                        </label>
+                        {edPdfFileBase64 && (
+                          <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
                         )}
-                        <span className="text-[10px] text-slate-500 block">
-                          {edPdfFileBase64 ? 'جاهز للحفظ والنشر الإلكتروني' : 'يدعم الاختيار المباشر والرفع السلس'}
-                        </span>
-                      </label>
+                      </div>
                     </div>
                   </div>
 
@@ -1762,37 +1800,6 @@ export default function AdminDashboard({
                 </div>
               </div>
               
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-5">
-                <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2 border-b border-slate-850 pb-3">
-                  <Settings2 className="w-4 h-4 text-emerald-400" />
-                  <span>بيانات الدخول للإدارة (Admin Credentials)</span>
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs text-slate-400 font-bold block">اسم الحساب (ID)</label>
-                    <input
-                      type="text"
-                      required
-                      value={setAdminId}
-                      onChange={(e) => setSetAdminId(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-600 text-slate-200 text-xs p-3 rounded-xl outline-none font-semibold ltr text-left"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs text-slate-400 font-bold block">كلمة المرور (Password)</label>
-                    <input
-                      type="text"
-                      required
-                      value={setAdminPass}
-                      onChange={(e) => setSetAdminPass(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-600 text-slate-200 text-xs p-3 rounded-xl outline-none font-semibold ltr text-left"
-                    />
-                  </div>
-                </div>
-                <p className="text-[10px] text-emerald-400/80 font-bold">تنبيه: تغيير هذه البيانات سيتم فورا، يرجى حفظها جيدا لمنع فقدان الوصول.</p>
-              </div>
-
               <div className="flex justify-end pt-3 border-t border-slate-855">
                 <button
                   type="submit"

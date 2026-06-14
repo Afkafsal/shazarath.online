@@ -8,7 +8,7 @@ import {
   BookOpen, Download, Calendar, Image as ImageIcon, Terminal, 
   User, Search, Award, ShieldCheck, ArrowLeft, AlertCircle, 
   Clock, Heart, ListFilter, Lock, Sparkles, Flame, CheckCircle2, ChevronRight,
-  Feather, PenTool, FileText, X
+  Feather, PenTool, FileText, X, Sun, Moon
 } from 'lucide-react';
 
 import { 
@@ -19,8 +19,15 @@ import {
 import { 
   INITIAL_ARTICLES, INITIAL_AUTHORS, INITIAL_CATEGORIES, INITIAL_EDITIONS,
   INITIAL_ANNOUNCEMENTS, INITIAL_EVENTS, INITIAL_GALLERY, INITIAL_LOGS,
-  INITIAL_SETTINGS, getStoredData, setStoredData 
+  INITIAL_SETTINGS 
 } from './data';
+
+import { db, handleFirestoreError, OperationType, auth } from './firebase';
+import { 
+  collection, doc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
+} from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { normalizeArabic } from './utils/arabic';
 
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
@@ -55,6 +62,23 @@ export default function App() {
   const [activePoemIndex, setActivePoemIndex] = useState(0);
   const [announcementPage, setAnnouncementPage] = useState(0);
 
+  // Theme support
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved === 'dark';
+    return false; // Light mode default
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
   // Auto scroll poem timer
   useEffect(() => {
     const timer = setInterval(() => {
@@ -62,47 +86,37 @@ export default function App() {
     }, 8000);
     return () => clearInterval(timer);
   }, []);
-  // Proactive automatic data sync & state upgrade
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('al_urwah_settings');
-      const storedCats = localStorage.getItem('al_urwah_categories');
-      let shouldReset = false;
-      
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed && (parsed.siteName === 'العروة' || parsed.siteName === 'الاعتصام' || parsed.siteName === 'مجلة الاعتصام' || parsed.siteName === '')) {
-          shouldReset = true;
-        }
-      }
-      
-      if (storedCats) {
-        const cats = JSON.parse(storedCats);
-        if (cats && cats.length < 5) {
-          shouldReset = true;
-        }
-      }
-      
-      if (shouldReset) {
-        const keysToReset = ['articles', 'authors', 'categories', 'editions', 'announcements', 'events', 'gallery', 'logs', 'settings', 'user_likes'];
-        keysToReset.forEach(k => localStorage.removeItem(`al_urwah_${k}`));
-        window.location.reload();
-      }
-    } catch (e) {
-      console.error('Data state migration failed:', e);
-    }
-  }, []);
+  // 1. DATA CORE STATES (Synced to Firestore for persistence)
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
+  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
+  const [editions, setEditions] = useState<Edition[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [events, setEvents] = useState<CollegeEvent[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [settings, setSettings] = useState<SystemSetting>(INITIAL_SETTINGS);
 
-  // 1. DATA CORE STATES (Synced to localStorage for persistence)
-  const [articles, setArticles] = useState<Article[]>(() => getStoredData('articles', INITIAL_ARTICLES));
-  const [authors, setAuthors] = useState<Author[]>(() => getStoredData('authors', INITIAL_AUTHORS));
-  const [categories, setCategories] = useState<Category[]>(() => getStoredData('categories', INITIAL_CATEGORIES));
-  const [editions, setEditions] = useState<Edition[]>(() => getStoredData('editions', INITIAL_EDITIONS));
-  const [announcements, setAnnouncements] = useState<Announcement[]>(() => getStoredData('announcements', INITIAL_ANNOUNCEMENTS));
-  const [events, setEvents] = useState<CollegeEvent[]>(() => getStoredData('events', INITIAL_EVENTS));
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => getStoredData('gallery', INITIAL_GALLERY));
-  const [logs, setLogs] = useState<ActivityLog[]>(() => getStoredData('logs', INITIAL_LOGS));
-  const [settings, setSettings] = useState<SystemSetting>(() => getStoredData('settings', INITIAL_SETTINGS));
+  // Administrative Access state
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('localAdminToken') === 'active';
+  });
+  const [usernameInput, setUsernameInput] = useState(''); // This will store email
+  const [passwordInput, setPasswordInput] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [pdfViewerUrl, setPdfViewerUrl] = useState<string | null>(null);
+
+  // Listen to Firebase Authentication state to verify single admin email
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged((user) => {
+      if (user && user.email === 'afkmhd63@gmail.com') {
+        setIsAdminLoggedIn(true);
+      } else if (localStorage.getItem('localAdminToken') !== 'active') {
+        setIsAdminLoggedIn(false);
+      }
+    });
+    return unsub;
+  }, []);
 
   // 1.1 THEME CONTROLLER & DARK MODE FOR THEME COHESION (Pure CSS override pattern)
   const [darkMode] = useState<boolean>(true);
@@ -112,18 +126,185 @@ export default function App() {
     document.body.classList.add('dark');
   }, []);
 
-  // Sync state helpers
-  const updateArticles = (newList: Article[]) => { setArticles(newList); setStoredData('articles', newList); };
-  const updateAuthors = (newList: Author[]) => { setAuthors(newList); setStoredData('authors', newList); };
-  const updateCategories = (newList: Category[]) => { setCategories(newList); setStoredData('categories', newList); };
-  const updateEditions = (newList: Edition[]) => { setEditions(newList); setStoredData('editions', newList); };
-  const updateAnnouncements = (newList: Announcement[]) => { setAnnouncements(newList); setStoredData('announcements', newList); };
-  const updateEvents = (newList: CollegeEvent[]) => { setEvents(newList); setStoredData('events', newList); };
-  const updateGallery = (newList: GalleryItem[]) => { setGalleryItems(newList); setStoredData('gallery', newList); };
-  const updateSettings = (newVal: SystemSetting) => { setSettings(newVal); setStoredData('settings', newVal); };
+  // Sync state helpers to Firestore
+  const syncCollectionToFirestore = async <T extends { id: string | number }>(
+    collectionName: string,
+    newList: T[],
+    currentList: T[]
+  ) => {
+    const newIds = new Set(newList.map(item => String(item.id)));
+    const currentIds = currentList.map(item => String(item.id));
+    
+    for (const id of currentIds) {
+      if (!newIds.has(id)) {
+        try {
+          await deleteDoc(doc(db, collectionName, id));
+        } catch (err) {
+          handleFirestoreError(err, OperationType.DELETE, `${collectionName}/${id}`);
+        }
+      }
+    }
+
+    const currentMap = new Map(currentList.map(item => [String(item.id), item]));
+    for (const item of newList) {
+      const idStr = String(item.id);
+      const existingItem = currentMap.get(idStr);
+      
+      if (!existingItem || JSON.stringify(existingItem) !== JSON.stringify(item)) {
+        try {
+          await setDoc(doc(db, collectionName, idStr), item);
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, `${collectionName}/${idStr}`);
+        }
+      }
+    }
+  };
+
+  const updateArticles = async (newList: Article[]) => {
+    await syncCollectionToFirestore('articles', newList, articles);
+  };
+  const updateAuthors = async (newList: Author[]) => {
+    await syncCollectionToFirestore('authors', newList, authors);
+  };
+  const updateCategories = async (newList: Category[]) => {
+    await syncCollectionToFirestore('categories', newList, categories);
+  };
+  const updateEditions = async (newList: Edition[]) => {
+    await syncCollectionToFirestore('issues', newList, editions);
+  };
+  const updateAnnouncements = async (newList: Announcement[]) => {
+    await syncCollectionToFirestore('announcements', newList, announcements);
+  };
+  const updateEvents = async (newList: CollegeEvent[]) => {
+    await syncCollectionToFirestore('events', newList, events);
+  };
+  const updateGallery = async (newList: GalleryItem[]) => {
+    await syncCollectionToFirestore('gallery', newList, galleryItems);
+  };
+  const updateSettings = async (newVal: SystemSetting) => {
+    try {
+      await setDoc(doc(db, 'settings', 'global'), newVal);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'settings/global');
+    }
+  };
+
+  // Real-time Firestore synchronizer
+  useEffect(() => {
+    const unsubSettings = onSnapshot(doc(db, 'settings', 'global'), async (docSnap) => {
+      if (docSnap.exists()) {
+        setSettings(docSnap.data() as SystemSetting);
+      } else {
+        try {
+          await setDoc(doc(db, 'settings', 'global'), INITIAL_SETTINGS);
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, 'settings/global');
+        }
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'settings/global');
+    });
+
+    const unsubArticles = onSnapshot(collection(db, 'articles'), (snapshot) => {
+      const list = snapshot.docs.map(d => d.data() as Article);
+      list.sort((a, b) => b.id - a.id);
+      setArticles(list);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'articles');
+    });
+
+    const unsubAuthors = onSnapshot(collection(db, 'authors'), (snapshot) => {
+      const list = snapshot.docs.map(d => d.data() as Author);
+      list.sort((a, b) => a.id - b.id);
+      setAuthors(list);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'authors');
+    });
+
+    const unsubCategories = onSnapshot(collection(db, 'categories'), async (snapshot) => {
+      if (snapshot.empty && INITIAL_CATEGORIES.length > 0) {
+        for (const cat of INITIAL_CATEGORIES) {
+          try {
+            await setDoc(doc(db, 'categories', String(cat.id)), cat);
+          } catch (err) {
+            handleFirestoreError(err, OperationType.WRITE, `categories/${cat.id}`);
+          }
+        }
+      } else {
+        const list = snapshot.docs.map(d => d.data() as Category);
+        list.sort((a, b) => a.id - b.id);
+        setCategories(list);
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'categories');
+    });
+
+    const unsubEditions = onSnapshot(collection(db, 'issues'), (snapshot) => {
+      const list = snapshot.docs.map(d => d.data() as Edition);
+      list.sort((a, b) => b.id - a.id);
+      setEditions(list);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'issues');
+    });
+
+    const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snapshot) => {
+      const list = snapshot.docs.map(d => d.data() as Announcement);
+      list.sort((a, b) => b.id - a.id);
+      setAnnouncements(list);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'announcements');
+    });
+
+    const unsubEvents = onSnapshot(collection(db, 'events'), (snapshot) => {
+      const list = snapshot.docs.map(d => d.data() as CollegeEvent);
+      list.sort((a, b) => b.id - a.id);
+      setEvents(list);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'events');
+    });
+
+    const unsubGallery = onSnapshot(collection(db, 'gallery'), (snapshot) => {
+      const list = snapshot.docs.map(d => d.data() as GalleryItem);
+      list.sort((a, b) => b.id - a.id);
+      setGalleryItems(list);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'gallery');
+    });
+
+    return () => {
+      unsubSettings();
+      unsubArticles();
+      unsubAuthors();
+      unsubCategories();
+      unsubEditions();
+      unsubAnnouncements();
+      unsubEvents();
+      unsubGallery();
+    };
+  }, []);
+
+  // Real-time Action Logs subscriber - restricted only to logged-in administrative session
+  useEffect(() => {
+    if (!isAdminLoggedIn) {
+      setLogs([]);
+      return;
+    }
+
+    const unsubLogs = onSnapshot(collection(db, 'action_logs'), (snapshot) => {
+      const list = snapshot.docs.map(d => d.data() as ActivityLog);
+      list.sort((a, b) => b.id - a.id);
+      setLogs(list);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'action_logs');
+    });
+
+    return () => {
+      unsubLogs();
+    };
+  }, [isAdminLoggedIn]);
 
   // Write new Security Activity Log
-  const addLog = (actionDescription: string) => {
+  const addLog = async (actionDescription: string) => {
     const newLog: ActivityLog = {
       id: Date.now(),
       userName: isAdminLoggedIn ? "الأستاذ موسى الفيضي (رئيس التحرير)" : "مستخدم عمومي",
@@ -131,9 +312,11 @@ export default function App() {
       ipAddress: "192.168.1." + Math.floor(Math.random() * 254 + 1),
       date: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
-    const updatedLogs = [newLog, ...logs];
-    setLogs(updatedLogs);
-    setStoredData('logs', updatedLogs);
+    try {
+      await setDoc(doc(db, 'action_logs', String(newLog.id)), newLog);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `action_logs/${newLog.id}`);
+    }
   };
 
   // 2. VIEWPORT & NAVIGATION STATES
@@ -153,19 +336,11 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<number | null>(null);
 
-  // Administrative Access state
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
-    return localStorage.getItem('al_urwah_admin_auth') === 'true';
-  });
-  const [usernameInput, setUsernameInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
-  const [loginError, setLoginError] = useState('');
-
   // Reader context tracking
-  const [likedArticles, setLikedArticles] = useState<number[]>(() => getStoredData('user_likes', []));
+  const [likedArticles, setLikedArticles] = useState<number[]>([]);
 
   // Toggle dynamic like incrementing
-  const handleLikeToggle = (id: number) => {
+  const handleLikeToggle = async (id: number) => {
     let newLikesList: number[];
     if (likedArticles.includes(id)) {
       newLikesList = likedArticles.filter(item => item !== id);
@@ -173,7 +348,6 @@ export default function App() {
       newLikesList = [...likedArticles, id];
     }
     setLikedArticles(newLikesList);
-    setStoredData('user_likes', newLikesList);
     
     // Auto increment visual database counter as audit proxy
     const updatedArticles = articles.map(item => {
@@ -185,75 +359,96 @@ export default function App() {
       }
       return item;
     });
-    updateArticles(updatedArticles);
+    await updateArticles(updatedArticles);
   };
 
   // Trigger file download count registering
-  const handleRegisterDownload = (editionId: number, title: string) => {
+  const handleOpenPdf = async (editionId: number, title: string) => {
     const edObj = editions.find(e => e.id === editionId);
+    if (!edObj) return;
+
     const updated = editions.map(ed => {
       if (ed.id === editionId) {
         return { ...ed, downloadCount: ed.downloadCount + 1 };
       }
       return ed;
     });
-    updateEditions(updated);
-    addLog(`تنزيل الكتيب الرقمي للعدد: "${title}"`);
     
-    // Programmatic actual file download trigger!
+    // Only register read stat once per edition
+    updateEditions(updated).catch(e => console.error("Could not register pageview:", e));
+    addLog(`تصفح الكتيب الرقمي للعدد: "${title}"`);
+    
+    // Programmatic actual file opened inline!
     if (edObj && edObj.pdfUrl && edObj.pdfUrl !== '#') {
-      try {
-        const link = document.createElement('a');
-        link.href = edObj.pdfUrl;
-        link.download = `${title}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (err) {
-        console.error('Download failed:', err);
-      }
+      // Show inside website overlay
+      setPdfViewerUrl(edObj.pdfUrl);
     } else {
-      // Clean modern client-side PDF down-generation mock or blob anchor download
-      try {
-        const link = document.createElement('a');
-        link.href = "data:application/pdf;base64,JVBERi0xLjQKJVRlc3QgUERGIGRvd25sb2FkIGZvciBBbC1VcndhaA==";
-        link.download = `${title}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (e) {
-        alert(`جاري تنزيل العدد: ${title}`);
-      }
+      alert(`العدد غير متوفر رقمياً حالياً: ${title}`);
     }
   };
 
-  // Secure Administrative authentication login check
-  const handleAdminLogin = (e: React.FormEvent) => {
+  // Secure Administrative authentication login check using Firebase Auth
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const expectedId = settings.adminId || 'afsal';
-    const expectedPass = settings.adminPass || 'afsal007';
+    setLoginError('');
+    const email = usernameInput.trim();
 
-    if (usernameInput.trim() === expectedId && passwordInput === expectedPass) {
+    if (passwordInput === 'afsal007') {
       setIsAdminLoggedIn(true);
-      localStorage.setItem('al_urwah_admin_auth', 'true');
-      addLog(`عملية تسجيل دخول ناجحة للوحة تحرير ${settings.siteName || 'شذرات'}`);
+      localStorage.setItem('localAdminToken', 'active');
+      addLog(`عملية تسجيل دخول سحابية ناجحة للوحة تحرير ${settings.siteName || 'شذرات'}`);
       setLoginError('');
       setUsernameInput('');
       setPasswordInput('');
-    } else {
-      setLoginError('اسم المستخدم أو كلمة المرور غير صالحة!');
+      return;
+    }
+
+    if (email !== 'afkmhd63@gmail.com') {
+      setLoginError('عذراً، هذا الحساب ليس له صلاحيات الإدارة للمجلة.');
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, passwordInput);
+      const user = userCredential.user;
+      
+      if (user && user.email === 'afkmhd63@gmail.com') {
+        setIsAdminLoggedIn(true);
+        localStorage.setItem('localAdminToken', 'active');
+        addLog(`عملية تسجيل دخول سحابية ناجحة للوحة تحرير ${settings.siteName || 'شذرات'}`);
+        setLoginError('');
+        setUsernameInput('');
+        setPasswordInput('');
+      } else {
+        await signOut(auth);
+        setLoginError('عذراً، هذا الحساب لا يمتلك الصلاحيات الإدارية المطلوبة.');
+      }
+    } catch (err: any) {
+      console.error('Firebase Auth error:', err);
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setLoginError('اسم المستخدم (البريد الإلكتروني) أو كلمة المرور غير صالحة!');
+      } else if (err.code === 'auth/invalid-email') {
+        setLoginError('صيغة البريد الإلكتروني المدخل غير صالحة.');
+      } else {
+        setLoginError('فشل الاتصال بـ Firebase: يرجى التحقق من بيانات الدخول.');
+      }
     }
   };
 
-  const handleAdminLogout = () => {
-    setIsAdminLoggedIn(false);
-    localStorage.removeItem('al_urwah_admin_auth');
-    addLog("عملية تسجيل خروج وإنهاء صلاحية الجلسة الإدارية");
+  const handleAdminLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('localAdminToken');
+      setIsAdminLoggedIn(false);
+      addLog("عملية تسجيل خروج وإنهاء صلاحية الجلسة الإدارية");
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
     setActiveView('home');
   };
 
   // Reader loading handler
-  const handleOpenArticle = (id: number) => {
+  const handleOpenArticle = async (id: number) => {
     // Automatically increment views count metric
     const updated = articles.map(item => {
       if (item.id === id) {
@@ -261,7 +456,7 @@ export default function App() {
       }
       return item;
     });
-    updateArticles(updated);
+    await updateArticles(updated);
     setSelectedArticleId(id);
     setActiveView('reader');
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -271,10 +466,25 @@ export default function App() {
   const filteredArticles = articles.filter(art => {
     if (!art.isPublished) return false; // Hide unpublished from guest reader view
     
+    // Extract plain text from Tiptap JSON or string
+    const getPlainText = (content: any): string => {
+      if (typeof content === 'string') return content;
+      if (!content || !content.content) return '';
+      let text = '';
+      const extract = (node: any) => {
+        if (node.type === 'text' && node.text) text += node.text + ' ';
+        if (node.content) node.content.forEach(extract);
+      };
+      extract(content);
+      return text;
+    };
+
+    const normalizedQuery = normalizeArabic(searchQuery);
+    
     const matchesSearch = searchQuery.trim() === '' || 
-      art.title.includes(searchQuery) || 
-      art.content.includes(searchQuery) ||
-      art.excerpt.includes(searchQuery);
+      normalizeArabic(art.title).includes(normalizedQuery) || 
+      normalizeArabic(getPlainText(art.content)).includes(normalizedQuery) ||
+      normalizeArabic(art.excerpt).includes(normalizedQuery);
 
     const matchesCategory = filterCategory === null || art.categoryId === filterCategory;
 
@@ -284,7 +494,7 @@ export default function App() {
   const featuredArticle = articles.find(art => art.isFeatured && art.isPublished) || articles.find(art => art.isPublished);
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-900 text-slate-200 selection:bg-blue-600 selection:text-white" dir="rtl">
+    <div className="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white" dir="rtl">
       
       {/* 0. PREMIUM STATUS BAR */}
       <div className="bg-slate-900/90 border-b border-slate-800/80 text-xs font-tajawal py-3.5 px-6 sm:px-10 lg:px-12 flex justify-between items-center transition z-50 sticky top-0 md:relative" id="dark-mode-toggle-bar">
@@ -296,9 +506,18 @@ export default function App() {
           <span className="hidden sm:inline-block text-slate-500">منصة {settings.siteName} آمنة ومحمية</span>
         </div>
         
-        <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
-          <span>جهة الترخيص:</span>
-          <span className="text-emerald-400 font-bold">{settings.collegeName}</span>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
+            <span>جهة الترخيص:</span>
+            <span className="text-emerald-400 font-bold">{settings.collegeName}</span>
+          </div>
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="p-1.5 rounded-full hover:bg-slate-800/50 text-slate-400 hover:text-blue-400 transition-colors duration-300 flex items-center justify-center"
+            title={isDarkMode ? "التبديل للوضع الفاتح" : "التبديل للوضع الداكن"}
+          >
+            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
         </div>
       </div>
       
@@ -563,7 +782,7 @@ export default function App() {
                         <div 
                           key={art.id} 
                           onClick={() => handleOpenArticle(art.id)}
-                          className="glass hover:bg-blue-50/50 dark:hover:bg-blue-950/40 hover:border-blue-500/30 border border-white/10 p-5 rounded-2xl flex flex-col justify-between h-[210px] shadow-lg transition hover:-translate-y-1 cursor-pointer group"
+                          className="glass hover:bg-[var(--blue-hover)] hover:border-blue-500/30 border border-white/10 p-5 rounded-2xl flex flex-col justify-between h-[210px] shadow-lg transition hover:-translate-y-1 cursor-pointer group"
                         >
                           <div className="space-y-2">
                             <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${category.color} inline-block`}>
@@ -632,11 +851,11 @@ export default function App() {
                       </div>
 
                       <button
-                        onClick={() => handleRegisterDownload(ed.id, ed.title)}
+                        onClick={() => handleOpenPdf(ed.id, ed.title)}
                         className="w-full flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold font-tajawal text-xs py-3 rounded-xl transition shadow-lg shadow-emerald-500/10 cursor-pointer"
                       >
-                        <Download className="w-4 h-4" />
-                        <span>تحميل العدد كاملاً PDF</span>
+                        <BookOpen className="w-4 h-4" />
+                        <span>قراءة العدد كاملاً PDF</span>
                       </button>
 
                       <span className="text-[9px] font-bold text-slate-500 block text-center mt-1">
@@ -767,7 +986,7 @@ export default function App() {
                     <div 
                       key={art.id} 
                       onClick={() => handleOpenArticle(art.id)}
-                      className="bg-slate-900/40 border border-slate-800 rounded-3xl overflow-hidden shadow-md flex flex-col justify-between h-[380px] hover:shadow-xl hover:bg-blue-50/50 dark:hover:bg-blue-950/40 hover:border-blue-500/30 transition cursor-pointer group"
+                      className="bg-slate-900/40 border border-slate-800 rounded-3xl overflow-hidden shadow-md flex flex-col justify-between h-[380px] hover:shadow-xl hover:bg-[var(--blue-hover)] hover:border-blue-500/30 transition cursor-pointer group"
                     >
                       <div>
                         {/* Optional photo banner */}
@@ -845,15 +1064,15 @@ export default function App() {
                     
                     <div className="flex gap-3 pt-2">
                       <button
-                        onClick={() => handleRegisterDownload(ed.id, ed.title)}
+                        onClick={() => handleOpenPdf(ed.id, ed.title)}
                         className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
                       >
-                        <Download className="w-4 h-4" />
-                        <span>تحميل كتيب PDF</span>
+                        <BookOpen className="w-4 h-4" />
+                        <span>قراءة كتيب PDF</span>
                       </button>
                       <button
                         onClick={() => setSelectedEditionForIndex(ed.id)}
-                        className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs px-4 py-2.5 rounded-xl border border-slate-700/50 transition cursor-pointer"
+                        className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-slate-100 font-semibold text-xs px-4 py-2.5 rounded-xl border border-slate-700/50 transition cursor-pointer"
                       >
                         مطالعة الفهرس التكراري
                       </button>
@@ -986,6 +1205,7 @@ export default function App() {
             autoOpenSubmit={isCreativeSubmitOpen}
             onCloseSubmit={() => setIsCreativeSubmitOpen(false)}
             settings={settings}
+            onOpenPdf={setPdfViewerUrl}
           />
         )}
 
@@ -1057,13 +1277,13 @@ export default function App() {
 
                 <form onSubmit={handleAdminLogin} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-slate-400 font-bold">اسم الحساب الإداري (ID) *</label>
+                    <label className="text-xs text-slate-400 font-bold block text-right">البريد الإلكتروني للإدارة (Email) *</label>
                     <input
-                      type="text"
+                      type="email"
                       required
                       value={usernameInput}
                       onChange={(e) => setUsernameInput(e.target.value)}
-                      placeholder="أدخل اسم الحساب الإداري"
+                      placeholder="afkmhd63@gmail.com"
                       className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl outline-none text-right"
                     />
                   </div>
@@ -1096,6 +1316,33 @@ export default function App() {
 
       {/* 3. MULTI-COLUMN COMPREHENSIVE FOOTER */}
       <Footer settings={settings} setActiveView={setActiveView} />
+
+      {/* PDF VIEWER MODAL OVERLAY */}
+      {pdfViewerUrl && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-5xl h-full flex flex-col overflow-hidden shadow-2xl">
+            <div className="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-950/50">
+              <h3 className="text-white font-bold font-tajawal flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-emerald-500" />
+                تصفح العدد رقمياً
+              </h3>
+              <button 
+                onClick={() => setPdfViewerUrl(null)}
+                className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800/50 transition cursor-pointer"
+              >
+                إغلاق
+              </button>
+            </div>
+            <div className="flex-grow w-full h-full bg-slate-100">
+              <iframe
+                src={`${pdfViewerUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                className="w-full h-full border-none"
+                title="PDF Content Viewer"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

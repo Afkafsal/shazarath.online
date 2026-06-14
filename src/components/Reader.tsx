@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Heart, Share2, QrCode, Type, Eye, Clock, Calendar, Check, Download, AlertCircle } from 'lucide-react';
 import { Article, Author, Category } from '../types';
+import TiptapRenderer from './TiptapRenderer';
 
 interface ReaderProps {
   article: Article;
@@ -307,18 +308,8 @@ export default function Reader({
           )}
 
           {/* Article textual contents */}
-          <div 
-            className={`font-tajawal text-slate-300 leading-relaxed space-y-6 select-text ${
-              fontSize === 'sm' ? 'text-sm' :
-              fontSize === 'md' ? 'text-base' :
-              fontSize === 'lg' ? 'text-lg sm:text-xl' : 'text-2xl'
-            }`}
-          >
-            {article.content.split('\n\n').map((paragraph, index) => (
-              <p key={index} className="text-justify font-medium">
-                {paragraph}
-              </p>
-            ))}
+          <div className="font-tajawal text-slate-300 leading-relaxed select-text mt-8 pt-4">
+            <TiptapRenderer content={article.content} fontSize={fontSize} />
           </div>
         </div>
 

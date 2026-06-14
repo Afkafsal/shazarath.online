@@ -64,7 +64,7 @@ export default function Navigation({
   };
 
   return (
-    <nav className="sticky top-0 z-50 glass-light border-b border-white/10 text-white shadow-2xl" id="main-navigation">
+    <nav className="sticky top-0 z-50 glass-light border-b border-slate-800/50 text-slate-200 shadow-2xl" id="main-navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           
@@ -125,12 +125,12 @@ export default function Navigation({
                         className={`w-full flex items-center justify-start gap-3 px-4 py-3 text-xs font-semibold text-right transition-colors cursor-pointer ${
                           activeView === 'creative' && activeCreativeTab === 'poems'
                             ? 'bg-amber-600/15 text-amber-300'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100'
                         }`}
                       >
                         <Quote className="w-4 h-4 text-amber-500 shrink-0" />
                         <div className="text-right">
-                          <span className="block font-bold font-serif-ar text-white">القصائد والدواوين</span>
+                          <span className="block font-bold font-serif-ar text-slate-100">القصائد والدواوين</span>
                           <span className="text-[10px] text-slate-400 block font-tajawal">أبيات من عيون الشعر العربي</span>
                         </div>
                       </button>
