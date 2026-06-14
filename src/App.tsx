@@ -285,7 +285,7 @@ export default function App() {
 
   // Real-time Action Logs subscriber - restricted only to logged-in administrative session
   useEffect(() => {
-    if (!isAdminLoggedIn) {
+    if (!isAdminLoggedIn || !auth.currentUser) {
       setLogs([]);
       return;
     }
@@ -295,7 +295,8 @@ export default function App() {
       list.sort((a, b) => b.id - a.id);
       setLogs(list);
     }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'action_logs');
+      // Intentionally omitting console.error for missing auth to avoid loud logging in bypass mode
+      console.log('Action logs unavailable:', error.message);
     });
 
     return () => {
@@ -312,6 +313,13 @@ export default function App() {
       ipAddress: "192.168.1." + Math.floor(Math.random() * 254 + 1),
       date: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
+    
+    // Update local state smoothly
+    setLogs(prev => [newLog, ...prev]);
+
+    // Skip DB write if bypassing auth
+    if (!auth.currentUser) return;
+
     try {
       await setDoc(doc(db, 'action_logs', String(newLog.id)), newLog);
     } catch (err) {
