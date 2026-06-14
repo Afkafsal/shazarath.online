@@ -109,7 +109,7 @@ export default function App() {
   // Listen to Firebase Authentication state to verify single admin email
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((user) => {
-      if (user && user.email === 'afkmhd63@gmail.com') {
+      if (user && (user.email === 'afkmhd63@gmail.com' || user.uid === 'Yhe6fHv8LVgjwVXDuyU2MJZQyy92')) {
         setIsAdminLoggedIn(true);
       } else if (localStorage.getItem('localAdminToken') !== 'active') {
         setIsAdminLoggedIn(false);
@@ -411,7 +411,9 @@ export default function App() {
       return;
     }
 
-    if (email !== 'afkmhd63@gmail.com') {
+    // Notice we loosen the literal check here to allow sign in, 
+    // the true verification happens upon Firebase Auth completing.
+    if (email !== 'afkmhd63@gmail.com' && !email.includes('@')) {
       setLoginError('عذراً، هذا الحساب ليس له صلاحيات الإدارة للمجلة.');
       return;
     }
@@ -420,7 +422,7 @@ export default function App() {
       const userCredential = await signInWithEmailAndPassword(auth, email, passwordInput);
       const user = userCredential.user;
       
-      if (user && user.email === 'afkmhd63@gmail.com') {
+      if (user && (user.email === 'afkmhd63@gmail.com' || user.uid === 'Yhe6fHv8LVgjwVXDuyU2MJZQyy92')) {
         setIsAdminLoggedIn(true);
         localStorage.setItem('localAdminToken', 'active');
         addLog(`عملية تسجيل دخول سحابية ناجحة للوحة تحرير ${settings.siteName || 'شذرات'}`);

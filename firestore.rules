@@ -16,7 +16,7 @@ service cloud.firestore {
 
     // Bootstrapped Admin: Verified email account under Firebase Auth
     function isAdmin() {
-      return true;
+      return request.auth != null && (request.auth.uid == 'Yhe6fHv8LVgjwVXDuyU2MJZQyy92' || request.auth.token.email == 'afkmhd63@gmail.com');
     }
 
     // Standard string and ID character constraints to prevent payload/injection poisoning
