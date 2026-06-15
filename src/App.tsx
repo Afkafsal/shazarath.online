@@ -509,7 +509,7 @@ export default function App() {
       {/* 0. PREMIUM STATUS BAR */}
       <div className="bg-slate-900/90 border-b border-slate-800/80 text-xs font-tajawal py-3.5 px-6 sm:px-10 lg:px-12 flex justify-between items-center transition z-50 sticky top-0 md:relative" id="dark-mode-toggle-bar">
         <div className="flex items-center gap-2 text-slate-400">
-          <Clock className="w-3.5 h-3.5 text-blue-400" />
+          <Clock className="w-3.5 h-3.5 text-white" />
           <span>اليوم: {new Date().toLocaleDateString('ar-LY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
           <span className="hidden sm:inline-block text-slate-600">|</span>
           <span className="hidden sm:inline h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
