@@ -97,6 +97,7 @@ export default function AdminDashboard({
   const [artTitle, setArtTitle] = useState('');
   const [artExcerpt, setArtExcerpt] = useState('');
   const [artContent, setArtContent] = useState<any>('');
+  const [artTags, setArtTags] = useState('');
   const [artCategory, setArtCategory] = useState<number>(categories[0]?.id || 1);
   const [artAuthor, setArtAuthor] = useState<number>(authors[0]?.id || 1);
   const [artEdition, setArtEdition] = useState<number | 'none'>('none');
@@ -141,6 +142,7 @@ export default function AdminDashboard({
   const [edDesc, setEdDesc] = useState('');
   const [edCover, setEdCover] = useState('');
   const [edDate, setEdDate] = useState('2026-06-30');
+  const [edCategory, setEdCategory] = useState<'نبضة' | 'عروة' | 'عروة الأطفال'>('عروة');
   const [isAddingEd, setIsAddingEd] = useState(false);
   const [edPdfFileBase64, setEdPdfFileBase64] = useState<string>('');
 
@@ -173,6 +175,7 @@ export default function AdminDashboard({
   const [setYoutubeUrl, setSetYoutubeUrl] = useState(settings.youtubeUrl || 'https://www.youtube.com/@shadharat_kms');
   const [setAdminId, setSetAdminId] = useState(settings.adminId || '');
   const [setAdminPass, setSetAdminPass] = useState(settings.adminPass || '');
+  const [poemsList, setPoemsList] = useState<{id: number, lines: string[], author: string}[]>(settings.poems || []);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Custom Deletion Confirmation Modal State (replaces confirm dialogs)
@@ -302,7 +305,8 @@ export default function AdminDashboard({
             imageUrl: artImageUrl || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80',
             readTime: artReadTime,
             isFeatured: artIsFeatured,
-            isPublished: artIsPublished
+            isPublished: artIsPublished,
+            tags: artTags ? artTags.split(',').map(t => t.trim()) : undefined
           };
         }
         return item;
@@ -326,7 +330,8 @@ export default function AdminDashboard({
         readTime: artReadTime,
         isFeatured: artIsFeatured,
         isPublished: artIsPublished,
-        createdAt: new Date().toISOString().split('T')[0]
+        createdAt: new Date().toISOString().split('T')[0],
+        tags: artTags ? artTags.split(',').map(t => t.trim()) : undefined
       };
       onUpdateArticles([newArt, ...articles]);
       onAddLog(`نشر مقال جديد في المجلة: "${artTitle}"`);
@@ -336,6 +341,7 @@ export default function AdminDashboard({
     setArtTitle('');
     setArtExcerpt('');
     setArtContent('');
+    setArtTags('');
     setArtImageUrl('');
     setArtReadTime('5 دقائق');
     setArtIsFeatured(false);
@@ -431,7 +437,8 @@ export default function AdminDashboard({
       coverUrl: edCover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80',
       pdfUrl: edPdfFileBase64 || '#',
       publishDate: edDate,
-      downloadCount: 0
+      downloadCount: 0,
+      category: edCategory,
     };
 
     onUpdateEditions([...editions, newEd]);
@@ -499,7 +506,8 @@ export default function AdminDashboard({
       whatsappUrl: setWhatsappUrl,
       youtubeUrl: setYoutubeUrl,
       adminId: setAdminId,
-      adminPass: setAdminPass
+      adminPass: setAdminPass,
+      poems: poemsList
     });
     onAddLog('تحديث وتعديل الإعدادات العامة للمجلة وعناوين الأقسام الرئيسية');
     setSaveSuccess(true);
@@ -586,7 +594,7 @@ export default function AdminDashboard({
                           <h4 className="text-3xl font-extrabold font-tajawal text-slate-100">{stat.val}</h4>
                           <span className="text-[10px] text-slate-500 font-semibold block pt-1">{stat.desc}</span>
                         </div>
-                        <div className={`p-3 rounded-xl bg-gradient-to-tr ${stat.color} text-white`}>
+                        <div className={`p-3 rounded-xl bg-gradient-to-tr ${stat.color} text-slate-100`}>
                           <Icon className="w-5 h-5" />
                         </div>
                       </div>
@@ -821,15 +829,27 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs text-slate-400 font-bold block">مقتطف موجز للمقال للمطالعة السريعة *</label>
-                    <textarea
-                      rows={2}
-                      value={artExcerpt}
-                      onChange={(e) => setArtExcerpt(e.target.value)}
-                      placeholder="أدخل ملخصاً إعلامياً بسيطاً يعكس الفكرة الرئيسية للبحث في سطرين"
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-blue-600 text-slate-200 text-sm p-3 rounded-xl outline-none font-medium resize-none"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5 md:col-span-1">
+                      <label className="text-xs text-slate-400 font-bold block">مقتطف موجز للمقال للمطالعة السريعة *</label>
+                      <textarea
+                        rows={2}
+                        value={artExcerpt}
+                        onChange={(e) => setArtExcerpt(e.target.value)}
+                        placeholder="أدخل ملخصاً إعلامياً بسيطاً يعكس الفكرة الرئيسية للبحث في سطرين"
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-blue-600 text-slate-200 text-sm p-3 rounded-xl outline-none font-medium resize-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5 md:col-span-1">
+                      <label className="text-xs text-slate-400 font-bold block">كلمات مفتاحية (مفصولة بفواصل)</label>
+                      <textarea
+                        rows={2}
+                        value={artTags}
+                        onChange={(e) => setArtTags(e.target.value)}
+                        placeholder="فقه، رمضان، صيام، أحكام"
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-blue-600 text-slate-200 text-sm p-3 rounded-xl outline-none font-medium resize-none"
+                      />
+                    </div>
                   </div>
 
                   {/* ADVANCED RICH-TEXT AREA CONTENT */}
@@ -930,7 +950,7 @@ export default function AdminDashboard({
                           setSpellCheckComplete(false);
                           setSpellcheckerResult([]);
                         }}
-                        className="bg-slate-800 text-slate-400 hover:text-white px-5 py-2 rounded-xl text-xs font-bold transition cursor-pointer"
+                        className="bg-slate-800 text-slate-400 hover:text-slate-100 px-5 py-2 rounded-xl text-xs font-bold transition cursor-pointer"
                       >
                         إلغاء التعديل
                       </button>
@@ -992,6 +1012,7 @@ export default function AdminDashboard({
                                   setArtTitle(art.title);
                                   setArtExcerpt(art.excerpt);
                                   setArtContent(art.content);
+                                  setArtTags(art.tags ? art.tags.join(', ') : '');
                                   setArtCategory(art.categoryId);
                                   setArtAuthor(art.authorId);
                                   setArtEdition(art.editionId || 'none');
@@ -1003,14 +1024,14 @@ export default function AdminDashboard({
                                   setSpellCheckComplete(false);
                                   setSpellcheckerResult([]);
                                 }}
-                                className="p-1.5 rounded-lg bg-blue-950/40 text-blue-400 hover:text-white hover:bg-blue-600 transition cursor-pointer"
+                                className="p-1.5 rounded-lg bg-blue-950/40 text-blue-400 hover:text-slate-100 hover:bg-blue-600 transition cursor-pointer"
                                 title="تعديل المقال"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => handleDeleteArticle(art.id, art.title)}
-                                className="p-1.5 rounded-lg bg-rose-955/40 text-rose-400 hover:text-white hover:bg-rose-600 transition cursor-pointer"
+                                className="p-1.5 rounded-lg bg-rose-955/40 text-rose-400 hover:text-slate-100 hover:bg-rose-600 transition cursor-pointer"
                                 title="إزالة وحذف"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1087,7 +1108,7 @@ export default function AdminDashboard({
                     <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
                       حفظ القسم وقواعد البيانات
                     </button>
-                    <button type="button" onClick={() => setIsAddingCat(false)} className="bg-slate-800 text-slate-400 hover:text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+                    <button type="button" onClick={() => setIsAddingCat(false)} className="bg-slate-800 text-slate-400 hover:text-slate-100 text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
                       إلغاء
                     </button>
                   </div>
@@ -1113,7 +1134,7 @@ export default function AdminDashboard({
                         <td className="p-4 text-center">
                           <button
                             onClick={() => handleDeleteCategory(c.id, c.name)}
-                            className="p-1.5 rounded-lg bg-rose-955/40 text-rose-400 hover:text-white hover:bg-rose-600 transition cursor-pointer"
+                            className="p-1.5 rounded-lg bg-rose-955/40 text-rose-400 hover:text-slate-100 hover:bg-rose-600 transition cursor-pointer"
                             title="إلغاء القسم"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1209,7 +1230,7 @@ export default function AdminDashboard({
                     <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
                       حفظ السيرة في قاعدة البيانات
                     </button>
-                    <button type="button" onClick={() => setIsAddingAuth(false)} className="bg-slate-800 text-slate-400 hover:text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+                    <button type="button" onClick={() => setIsAddingAuth(false)} className="bg-slate-800 text-slate-400 hover:text-slate-100 text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
                       إلغاء
                     </button>
                   </div>
@@ -1233,7 +1254,7 @@ export default function AdminDashboard({
                     
                     <button
                       onClick={() => handleDeleteAuthor(a.id, a.name)}
-                      className="absolute left-3 top-3 p-1.5 rounded-lg bg-rose-955/20 text-rose-400 hover:text-white hover:bg-rose-600 transition cursor-pointer"
+                      className="absolute left-3 top-3 p-1.5 rounded-lg bg-rose-955/20 text-rose-400 hover:text-slate-100 hover:bg-rose-600 transition cursor-pointer"
                       title="إزالة الكاتب"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1277,6 +1298,18 @@ export default function AdminDashboard({
                         placeholder="مثال: العدد الثاني - شوال ١٤٤٧"
                         className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl outline-none font-bold"
                       />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-slate-400 font-bold block">تصنيف المجلة / الصحيفة *</label>
+                      <select
+                        value={edCategory || 'عروة'}
+                        onChange={(e) => setEdCategory(e.target.value as any)}
+                        className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm p-3 rounded-xl outline-none font-bold"
+                      >
+                        <option value="عروة">مجلة عروة</option>
+                        <option value="عروة الأطفال">عروة الأطفال</option>
+                        <option value="نبضة">صحيفة نبضة</option>
+                      </select>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs text-slate-400 font-bold block">تاريخ النشر في المعهد الدولي *</label>
@@ -1350,7 +1383,7 @@ export default function AdminDashboard({
                     <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
                       حفظ العدد وتوليد QR
                     </button>
-                    <button type="button" onClick={() => setIsAddingEd(false)} className="bg-slate-800 text-slate-400 hover:text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+                    <button type="button" onClick={() => setIsAddingEd(false)} className="bg-slate-800 text-slate-400 hover:text-slate-100 text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
                       إلغاء
                     </button>
                   </div>
@@ -1364,16 +1397,19 @@ export default function AdminDashboard({
                       <img src={e.coverUrl} className="w-full h-full object-cover" alt="غلاف" referrerPolicy="no-referrer" />
                     </div>
                     <div className="text-right">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">{e.category || 'عروة'}</span>
+                      </div>
                       <h4 className="font-extrabold text-slate-100 font-tajawal text-sm">{e.title}</h4>
                       <span className="text-[10px] text-slate-400 mt-1 block">تاريخ النشر: {e.publishDate}</span>
-                      <span className="text-[10px] font-bold text-sky-400 mt-2 block">إجمالي عمليات تنزيل الكتيب: {e.downloadCount || 120}</span>
+                      <span className="text-[10px] font-bold text-sky-400 mt-2 block">إجمالي عمليات تنزيل الكتيب: {e.downloadCount || 0}</span>
                     </div>
                     <div className="absolute left-3 top-3 text-[10px] font-bold text-emerald-400 bg-emerald-950/30 border border-emerald-500/10 px-2 py-0.5 rounded-full">
                       جاهز للتنزيل
                     </div>
                     <button
                       onClick={() => handleDeleteEdition(e.id, e.title)}
-                      className="absolute left-3 bottom-3 p-1.5 rounded-lg bg-rose-950/20 text-rose-500 hover:text-white hover:bg-rose-600 transition cursor-pointer"
+                      className="absolute left-3 bottom-3 p-1.5 rounded-lg bg-rose-950/20 text-rose-500 hover:text-slate-100 hover:bg-rose-600 transition cursor-pointer"
                       title="حذف العدد الدائم"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1461,7 +1497,7 @@ export default function AdminDashboard({
                     <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
                       نشر الإعلان فوراً للطلاب
                     </button>
-                    <button type="button" onClick={() => setIsAddingAnn(false)} className="bg-slate-800 text-slate-400 hover:text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+                    <button type="button" onClick={() => setIsAddingAnn(false)} className="bg-slate-800 text-slate-400 hover:text-slate-100 text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
                       إلغاء التعديل
                     </button>
                   </div>
@@ -1485,7 +1521,7 @@ export default function AdminDashboard({
                     </div>
                     <button
                       onClick={() => setConfirmDelete({ type: 'announcement', id: ann.id, title: ann.title })}
-                      className="p-1.5 rounded-lg bg-rose-950/20 text-rose-400 hover:text-white hover:bg-rose-600 transition cursor-pointer"
+                      className="p-1.5 rounded-lg bg-rose-950/20 text-rose-400 hover:text-slate-100 hover:bg-rose-600 transition cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1753,6 +1789,85 @@ export default function AdminDashboard({
                       className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs p-3 rounded-xl outline-none font-semibold"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* POEMS CUSTOMIZATION */}
+              <div className="border-t border-slate-800 pt-5 space-y-4">
+                <div className="border-b border-slate-850 pb-2 flex justify-between items-center">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-100 font-tajawal flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-amber-400"></span>
+                      <span>إدارة واحة القصائد الشعرية اليومية</span>
+                    </h4>
+                    <p className="text-[10px] text-slate-400 mt-0.5">تعديل وإضافة الأبيات الشعرية التي تظهر في الواحة الرئيسية.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPoemsList([...poemsList, { id: Date.now(), lines: ["", ""], author: "" }])}
+                    className="flex items-center gap-1 text-xs font-bold bg-amber-600/20 text-amber-400 hover:bg-amber-600 hover:text-white px-3 py-1.5 rounded-lg transition"
+                  >
+                    + إضافة قصيدة
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {poemsList.map((poem, index) => (
+                    <div key={poem.id} className="p-4 bg-slate-950/50 border border-slate-800 rounded-xl space-y-3 relative">
+                      <button
+                        type="button"
+                        onClick={() => setPoemsList(poemsList.filter(p => p.id !== poem.id))}
+                        className="absolute left-4 top-4 text-rose-500 hover:text-rose-400 p-1 bg-rose-500/10 rounded-lg transition"
+                        title="حذف القصيدة"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
+                        <div>
+                          <label className="text-xs text-slate-400 font-bold block mb-1">البيت الأول (الشطر 1)</label>
+                          <input
+                            type="text"
+                            value={poem.lines[0] || ""}
+                            onChange={(e) => {
+                              const newPoems = [...poemsList];
+                              newPoems[index].lines[0] = e.target.value;
+                              setPoemsList(newPoems);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs p-2.5 rounded-xl outline-none font-serif-ar"
+                            placeholder="الشطر الأول..."
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-slate-400 font-bold block mb-1">البيت الثاني (الشطر 2) أو العجز</label>
+                          <input
+                            type="text"
+                            value={poem.lines[1] || ""}
+                            onChange={(e) => {
+                              const newPoems = [...poemsList];
+                              newPoems[index].lines[1] = e.target.value;
+                              setPoemsList(newPoems);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs p-2.5 rounded-xl outline-none font-serif-ar"
+                            placeholder="الشطر الثاني..."
+                          />
+                        </div>
+                      </div>
+                      <div className="pr-8">
+                        <label className="text-xs text-slate-400 font-bold block mb-1">اسم الشاعر / الأديب</label>
+                        <input
+                          type="text"
+                          value={poem.author || ""}
+                          onChange={(e) => {
+                            const newPoems = [...poemsList];
+                            newPoems[index].author = e.target.value;
+                            setPoemsList(newPoems);
+                          }}
+                          className="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs p-2.5 rounded-xl outline-none"
+                          placeholder="الاسم..."
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

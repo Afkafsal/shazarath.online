@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --accent-blue-400: #2563eb;
+  --accent-blue-300: #1d4ed8;
+  --accent-amber-400: #d97706;
+  --accent-emerald-400: #059669;
+  --accent-sky-400: #0284c7;
+  --accent-rose-400: #e11d48;
+
+  /* LIGHT MODE (DEFAULT) */
+  --page-bg: #fdfbf7; /* Warm off-white */
+  --page-grad: radial-gradient(circle at top right, #fffcf5 0%, #fdfbf7 100%);
+  --text-base: #1e293b;
+
+  /* Inverted Slate Scale for Light Mode */
+  --slate-950: #fdfbf7;
+  --slate-905: #f4efeb;
+  --slate-900: #ffffff;
+  --slate-850: #efede7;
+  --slate-800: #e2dfd9;
+  --slate-750: #cbd5e1;
+  --slate-700: #94a3b8;
+  --slate-600: #64748b;
+  --slate-500: #52525b;
+  --slate-400: #3f3f46;
+  --slate-300: #27272a;
+  --slate-200: #18181b;
+  --slate-100: #09090b;
+
+  /* Glass in Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(29, 78, 216, 0.12);
+  --glass-bg-light: rgba(255, 255, 255, 0.9);
+  --glass-border-light: rgba(29, 78, 216, 0.15);
+
+  /* Scrollbar Light Mode */
+  --scroll-track: #f1f5f9;
+  --scroll-thumb: #cbd5e1;
+  --scroll-hover: #2563eb;
+  
+  --blue-hover: rgba(239, 246, 255, 0.5); /* blue-50/50 */
+}
+
+html.dark {
+  --accent-blue-400: #60a5fa;
+  --accent-blue-300: #93c5fd;
+  --accent-amber-400: #fbbf24;
+  --accent-emerald-400: #34d399;
+  --accent-sky-400: #38bdf8;
+  --accent-rose-400: #fb7185;
+
+  /* DARK MODE */
+  --page-bg: #090e17; /* Deep midnight navy */
+  --page-grad: radial-gradient(circle at top right, #111a2e 0%, #090e17 100%);
+  --text-base: #e2e8f0;
+
+  /* Original Slate Scale for Dark Mode */
+  --slate-950: #050a14;
+  --slate-905: #0a101d;
+  --slate-900: #090e17;
+  --slate-850: #111a2e;
+  --slate-800: #1b2742;
+  --slate-750: #293857;
+  --slate-700: #3a4a6b;
+  --slate-600: #576d91;
+  --slate-500: #889fb8;
+  --slate-400: #b0c4de;
+  --slate-300: #d1dfed;
+  --slate-200: #eef4f7;
+  --slate-100: #ffffff;
+
+  /* Glass in Dark Mode */
+  --glass-bg: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(59, 130, 246, 0.15);
+  --glass-bg-light: rgba(2, 6, 23, 0.9);
+  --glass-border-light: rgba(59, 130, 246, 0.2);
+
+  /* Scrollbar Dark Mode */
+  --scroll-track: #020617;
+  --scroll-thumb: #1e293b;
+  --scroll-hover: #3b82f6;
+
+  --blue-hover: rgba(7, 13, 30, 0.4); /* blue-950/40 */
+}
+
+@theme {
+  --color-blue-400: var(--accent-blue-400);
+  --color-blue-300: var(--accent-blue-300);
+  --color-amber-400: var(--accent-amber-400);
+  --color-emerald-400: var(--accent-emerald-400);
+  --color-sky-400: var(--accent-sky-400);
+  --color-rose-400: var(--accent-rose-400);
+
+  --font-tajawal: "Noto Kufi Arabic", "Inter", sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-serif-ar: 'Noto Kufi Arabic', serif;
+  
+  --color-brand-blue-950: #070d1e;
+  --color-brand-blue-900: #0a1128;
+  --color-brand-blue-800: #1c2a4f;
+  
+  /* Map Tailwind vars to our semantic CSS variables */
+  --color-slate-950: var(--slate-950);
+  --color-slate-905: var(--slate-905);
+  --color-slate-900: var(--slate-900);
+  --color-slate-850: var(--slate-850);
+  --color-slate-800: var(--slate-800);
+  --color-slate-750: var(--slate-750);
+  --color-slate-700: var(--slate-700);
+  --color-slate-600: var(--slate-600);
+  --color-slate-500: var(--slate-500);
+  --color-slate-400: var(--slate-400);
+  --color-slate-300: var(--slate-300);
+  --color-slate-200: var(--slate-200);
+  --color-slate-100: var(--slate-100);
+
+  /* Royal blue shades */
+  --color-blue-950: #0d1e3d;
+  --color-blue-900: #1e3a8a;
+  --color-blue-800: #1e40af;
+  --color-blue-700: #1d4ed8;
+  --color-blue-600: #2563eb;
+  --color-blue-500: #3b82f6;
+  /* overriding blue 400 */
+  /* overriding blue 300 */
+  --color-blue-200: #bfdbfe;
+  --color-blue-100: #dbeafe;
+
+  /* Sky blue shades */
+  --color-sky-950: #083344;
+  --color-sky-900: #0c4a6e;
+  --color-sky-800: #075985;
+  --color-sky-450: #0284c7;
+  /* overriding sky 400 */
+  --color-sky-300: #7dd3fc;
+}
+
+/* Custom scrollbars for readers and admin log panels */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scroll-track);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-hover);
+}
+
+body, html, input, button, select, option, textarea, span, p, a, li, div {
+  font-family: "Noto Kufi Arabic", sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6,
+h1 *, h2 *, h3 *, h4 *, h5 *, h6 *,
+.font-serif-ar,
+.font-brand {
+  font-family: 'Noto Kufi Arabic', serif !important;
+}
+
+code, pre, .font-mono, .font-mono * {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+body {
+  background-color: var(--page-bg);
+  background-image: var(--page-grad);
+  background-attachment: fixed;
+  color: var(--text-base);
+  direction: rtl;
+}
+
+/* Sophisticated premium Glassmorphic panels */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem;
+}
+
+.glass-light {
+  background: var(--glass-bg-light);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border-light);
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-panel-light {
+  background: var(--glass-bg-light);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border-light);
+}
+
+.prose {
+  --tw-prose-body: var(--text-base) !important;
+  --tw-prose-headings: var(--text-base) !important;
+  --tw-prose-lead: var(--slate-400) !important;
+  --tw-prose-links: var(--color-blue-500) !important;
+  --tw-prose-bold: var(--text-base) !important;
+  --tw-prose-counters: var(--slate-500) !important;
+  --tw-prose-bullets: var(--slate-500) !important;
+  --tw-prose-hr: var(--slate-800) !important;
+  --tw-prose-quotes: var(--text-base) !important;
+  --tw-prose-quote-borders: var(--slate-800) !important;
+  --tw-prose-captions: var(--slate-400) !important;
+  --tw-prose-code: var(--text-base) !important;
+  --tw-prose-pre-code: var(--text-base) !important;
+  --tw-prose-pre-bg: var(--slate-950) !important;
+  --tw-prose-th-borders: var(--slate-800) !important;
+  --tw-prose-td-borders: var(--slate-800) !important;
+}
+

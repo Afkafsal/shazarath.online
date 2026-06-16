@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { BookOpen, Newspaper, FileText, Calendar, Image, Feather, Settings, LogOut, Menu, X, Compass, Quote, ChevronDown } from 'lucide-react';
+import { BookOpen, Newspaper, FileText, Calendar, Image, Feather, Settings, LogOut, Menu, X, Compass, Quote, ChevronDown, Search, Moon, Sun } from 'lucide-react';
 import { SystemSetting } from '../types';
 
 interface NavigationProps {
@@ -16,6 +16,8 @@ interface NavigationProps {
   setFilterCategory: (id: number | null) => void;
   activeCreativeTab?: 'poems' | 'stories' | 'travelogues';
   setActiveCreativeTab?: (tab: 'poems' | 'stories' | 'travelogues') => void;
+  isDarkMode: boolean;
+  setIsDarkMode: (val: boolean) => void;
 }
 
 export default function Navigation({
@@ -26,7 +28,9 @@ export default function Navigation({
   onLogout,
   setFilterCategory,
   activeCreativeTab = 'poems',
-  setActiveCreativeTab
+  setActiveCreativeTab,
+  isDarkMode,
+  setIsDarkMode
 }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [creativeDropdownOpen, setCreativeDropdownOpen] = useState(false);
@@ -99,8 +103,8 @@ export default function Navigation({
                       }}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-tajawal font-semibold transition cursor-pointer ${
                         isActive
-                          ? 'bg-blue-600 shadow-md shadow-blue-600/10 text-white'
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                          ? 'bg-blue-600 shadow-md shadow-blue-600/10 text-slate-100'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100'
                       }`}
                     >
                       <IconComponent className="w-4 h-4" />
@@ -144,12 +148,12 @@ export default function Navigation({
                         className={`w-full flex items-center justify-start gap-3 px-4 py-3 text-xs font-semibold text-right transition-colors cursor-pointer ${
                           activeView === 'creative' && activeCreativeTab === 'stories'
                             ? 'bg-blue-600/15 text-blue-300'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100'
                         }`}
                       >
                         <BookOpen className="w-4 h-4 text-blue-500 shrink-0" />
                         <div className="text-right">
-                          <span className="block font-bold font-serif-ar text-white">القصص والعِبر الصالحة</span>
+                          <span className="block font-bold font-serif-ar text-slate-100">القصص والعِبر الصالحة</span>
                           <span className="text-[10px] text-slate-400 block font-tajawal">سرد نثري راقي يقدّم الحكمة</span>
                         </div>
                       </button>
@@ -163,12 +167,12 @@ export default function Navigation({
                         className={`w-full flex items-center justify-start gap-3 px-4 py-3 text-xs font-semibold text-right transition-colors cursor-pointer ${
                           activeView === 'creative' && activeCreativeTab === 'travelogues'
                             ? 'bg-emerald-600/15 text-emerald-300'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100'
                         }`}
                       >
                         <Compass className="w-4 h-4 text-emerald-500 shrink-0" />
                         <div className="text-right">
-                          <span className="block font-bold font-serif-ar text-white">أدب ومذكرات الرحلات</span>
+                          <span className="block font-bold font-serif-ar text-slate-100">أدب ومذكرات الرحلات</span>
                           <span className="text-[10px] text-slate-400 block font-tajawal">مذكرات الأسفار والرحالة</span>
                         </div>
                       </button>
@@ -183,8 +187,8 @@ export default function Navigation({
                   onClick={() => handleNavClick(item.view)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-tajawal font-semibold transition cursor-pointer ${
                     isActive
-                      ? 'bg-blue-600 shadow-md shadow-blue-600/10 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      ? 'bg-blue-600 shadow-md shadow-blue-600/10 text-slate-100'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100'
                   }`}
                 >
                   <IconComponent className="w-4 h-4" />
@@ -196,13 +200,27 @@ export default function Navigation({
 
           {/* Action Buttons (Admin & System Controls) */}
           <div className="hidden md:flex items-center gap-3">
+            <button
+              className="p-2.5 rounded-xl border border-transparent hover:bg-slate-800/50 text-slate-400 hover:text-blue-400 transition-colors duration-300 flex items-center justify-center cursor-pointer"
+              title="بحث"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="p-2.5 rounded-xl border border-transparent hover:bg-slate-800/50 text-slate-400 hover:text-blue-400 transition-colors duration-300 flex items-center justify-center cursor-pointer"
+              title={isDarkMode ? "التبديل للوضع الفاتح" : "التبديل للوضع الداكن"}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <div className="w-px h-6 bg-slate-800 mx-1"></div>
             {isAdminLoggedIn ? (
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleNavClick('admin')}
                   className={`p-2.5 rounded-xl border transition cursor-pointer ${
                     activeView === 'admin'
-                      ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg'
+                      ? 'bg-emerald-600 border-emerald-600 text-slate-100 shadow-lg'
                       : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300 hover:bg-emerald-900'
                   }`}
                   title="لوحة المعاينة الإدارية"
@@ -222,8 +240,8 @@ export default function Navigation({
                 onClick={() => handleNavClick('admin')}
                 className={`p-2.5 rounded-xl border transition cursor-pointer ${
                   activeView === 'admin'
-                    ? 'bg-blue-600 border-blue-600 text-white'
-                    : 'bg-slate-800/80 hover:bg-blue-900/50 border border-slate-700/50 hover:border-blue-700 text-slate-300 hover:text-white'
+                    ? 'bg-blue-600 border-blue-600 text-slate-100'
+                    : 'bg-slate-800/80 hover:bg-blue-900/50 border border-slate-700/50 hover:border-blue-700 text-slate-300 hover:text-slate-100'
                 }`}
                 title="دخول الإدارة"
               >
@@ -247,7 +265,7 @@ export default function Navigation({
 
       {/* Mobile Drawer menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden glass border-b border-white/10 px-4 py-4 space-y-2">
+        <div className="md:hidden glass border-b border-slate-500/20 px-4 py-4 space-y-2">
           {navItems.map((item) => {
             const IconComponent = item.icon;
             const isActive = activeView === item.view;
@@ -261,7 +279,7 @@ export default function Navigation({
                   >
                     <span className="flex items-center gap-3">
                       <IconComponent className="w-5 h-5 text-amber-400" />
-                      <span className="text-white">{item.label}</span>
+                      <span className="text-slate-100">{item.label}</span>
                     </span>
                     <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${mobileCreativeOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -276,7 +294,7 @@ export default function Navigation({
                         className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-bold text-right transition ${
                           activeView === 'creative' && activeCreativeTab === 'poems'
                             ? 'bg-amber-600/15 text-amber-300'
-                            : 'text-slate-400 hover:text-white hover:bg-slate-850'
+                            : 'text-slate-400 hover:text-slate-100 hover:bg-slate-850'
                         }`}
                       >
                         <Quote className="w-4 h-4 text-amber-500" />
@@ -291,7 +309,7 @@ export default function Navigation({
                         className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-bold text-right transition ${
                           activeView === 'creative' && activeCreativeTab === 'stories'
                             ? 'bg-blue-600/15 text-blue-300'
-                            : 'text-slate-400 hover:text-white hover:bg-slate-855'
+                            : 'text-slate-400 hover:text-slate-100 hover:bg-slate-855'
                         }`}
                       >
                         <BookOpen className="w-4 h-4 text-blue-500" />
@@ -306,7 +324,7 @@ export default function Navigation({
                         className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-bold text-right transition ${
                           activeView === 'creative' && activeCreativeTab === 'travelogues'
                             ? 'bg-emerald-600/15 text-emerald-300'
-                            : 'text-slate-400 hover:text-white hover:bg-slate-855'
+                            : 'text-slate-400 hover:text-slate-100 hover:bg-slate-855'
                         }`}
                       >
                         <Compass className="w-4 h-4 text-emerald-500" />
@@ -325,7 +343,7 @@ export default function Navigation({
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-tajawal font-bold text-right transition cursor-pointer ${
                   isActive
                     ? 'bg-blue-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100'
                 }`}
               >
                 <IconComponent className="w-5 h-5 text-blue-400" />
@@ -335,6 +353,21 @@ export default function Navigation({
           })}
 
           <div className="pt-4 border-t border-slate-800 space-y-2">
+            <div className="flex gap-2 mb-2">
+              <button
+                className="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 transition cursor-pointer font-tajawal font-bold text-sm"
+              >
+                <Search className="w-4 h-4" />
+                بحث
+              </button>
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 transition cursor-pointer font-tajawal font-bold text-sm"
+              >
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDarkMode ? "الوضع الفاتح" : "الوضع الداكن"}
+              </button>
+            </div>
             {isAdminLoggedIn ? (
               <div className="space-y-2">
                 <button

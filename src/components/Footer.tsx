@@ -14,8 +14,14 @@ interface FooterProps {
 
 export default function Footer({ settings, setActiveView }: FooterProps) {
   return (
-    <footer className="glass-light border-t border-white/10 text-slate-400 font-tajawal text-right py-12 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]" dir="rtl" id="app-footer">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="relative overflow-hidden glass-light border-t border-white/10 text-slate-400 font-tajawal text-right py-12 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]" dir="rtl" id="app-footer">
+      {/* Subtle Arabic Geometric Pattern Background */}
+      <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none"></div>
+      <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none text-[30rem] font-serif overflow-hidden">
+        ۞
+      </div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
         
         {/* Brand and Description */}
         <div className="md:col-span-2 space-y-4">

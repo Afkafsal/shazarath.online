@@ -35,6 +35,7 @@ export interface Article {
   isPublished: boolean;
   createdAt: string;
   qrCodeUrl?: string;
+  tags?: string[];
 }
 
 export interface Edition {
@@ -45,6 +46,7 @@ export interface Edition {
   publishDate: string;
   description: string;
   downloadCount: number;
+  category?: 'نبضة' | 'عروة' | 'عروة الأطفال';
 }
 
 export interface Announcement {
@@ -103,4 +105,5 @@ export interface SystemSetting {
   youtubeUrl?: string;
   adminId?: string;
   adminPass?: string;
+  poems?: { id: number, lines: string[], author: string }[];
 }

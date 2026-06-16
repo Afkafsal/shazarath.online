@@ -35,29 +35,6 @@ import Reader from './components/Reader';
 import AdminDashboard from './components/AdminDashboard';
 import CreativeOasis from './components/CreativeOasis';
 
-const POEMS_LIST = [
-  {
-    id: 1,
-    lines: ["عليك بالعلم فاطلبه بلا كسلِ", "واعمل بهِ هادياً تنجو من الزللِ"],
-    author: "ابن الوردي"
-  },
-  {
-    id: 2,
-    lines: ["العلمُ يَبني بيوتاً لا عِمادَ لها", "والجهلُ يَهدمُ بيتَ العِزّ والشَّرَفِ"],
-    author: "أحمد شوقي"
-  },
-  {
-    id: 3,
-    lines: ["تَمَسَّكْ بِحَبْلِ اللهِ وَاتَّبِعِ الْهُدَى", "وَلَا تَكُ بَدْعِيّاً لَعَلَّكَ تُفْلِحُ"],
-    author: "ابن أبي داود"
-  },
-  {
-    id: 4,
-    lines: ["بصوتِ الحقِّ ندعو في بِلادٍ", "رواها العلم من نورِ الرشادِ"],
-    author: "شاعر شذرات"
-  }
-];
-
 export default function App() {
   const [activePoemIndex, setActivePoemIndex] = useState(0);
   const [announcementPage, setAnnouncementPage] = useState(0);
@@ -79,13 +56,6 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // Auto scroll poem timer
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActivePoemIndex(prev => (prev + 1) % POEMS_LIST.length);
-    }, 8000);
-    return () => clearInterval(timer);
-  }, []);
   // 1. DATA CORE STATES (Synced to Firestore for persistence)
   const [articles, setArticles] = useState<Article[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
@@ -96,6 +66,18 @@ export default function App() {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [settings, setSettings] = useState<SystemSetting>(INITIAL_SETTINGS);
+
+  // Auto scroll poem timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActivePoemIndex(prev => {
+        const poemsArray = settings.poems || [];
+        if (poemsArray.length === 0) return 0;
+        return (prev + 1) % poemsArray.length;
+      });
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [settings.poems]);
 
   // Administrative Access state
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
@@ -491,10 +473,17 @@ export default function App() {
 
     const normalizedQuery = normalizeArabic(searchQuery);
     
+    // Find associated author for search
+    const authorObj = authors.find(a => a.id === art.authorId);
+    const authorNameStr = authorObj ? normalizeArabic(authorObj.name) : '';
+    const tagsStr = art.tags ? normalizeArabic(art.tags.join(' ')) : '';
+
     const matchesSearch = searchQuery.trim() === '' || 
       normalizeArabic(art.title).includes(normalizedQuery) || 
       normalizeArabic(getPlainText(art.content)).includes(normalizedQuery) ||
-      normalizeArabic(art.excerpt).includes(normalizedQuery);
+      normalizeArabic(art.excerpt).includes(normalizedQuery) ||
+      authorNameStr.includes(normalizedQuery) ||
+      tagsStr.includes(normalizedQuery);
 
     const matchesCategory = filterCategory === null || art.categoryId === filterCategory;
 
@@ -504,30 +493,23 @@ export default function App() {
   const featuredArticle = articles.find(art => art.isFeatured && art.isPublished) || articles.find(art => art.isPublished);
 
   return (
-    <div className="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white" dir="rtl">
+    <div className="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-slate-100" dir="rtl">
       
       {/* 0. PREMIUM STATUS BAR */}
-      <div className="bg-slate-900/90 border-b border-slate-800/80 text-xs font-tajawal py-3.5 px-6 sm:px-10 lg:px-12 flex justify-between items-center transition z-50 sticky top-0 md:relative" id="dark-mode-toggle-bar">
+      <div className="bg-slate-950 border-b border-slate-900 text-xs font-tajawal py-3 px-6 sm:px-10 lg:px-12 flex justify-between items-center transition z-50 sticky top-0 md:relative" id="dark-mode-toggle-bar">
         <div className="flex items-center gap-2 text-slate-400">
-          <Clock className="w-3.5 h-3.5 text-white" />
+          <Clock className="w-3.5 h-3.5 text-slate-100" />
           <span>اليوم: {new Date().toLocaleDateString('ar-LY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
           <span className="hidden sm:inline-block text-slate-600">|</span>
           <span className="hidden sm:inline h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="hidden sm:inline-block text-slate-500">منصة {settings.siteName} آمنة ومحمية</span>
+          <span className="hidden sm:inline-block text-slate-500">منصة {settings.siteName} آمنة</span>
         </div>
         
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
             <span>جهة الترخيص:</span>
-            <span className="text-emerald-400 font-bold">{settings.collegeName}</span>
+            <span className="text-amber-400 font-bold">{settings.collegeName}</span>
           </div>
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="p-1.5 rounded-full hover:bg-slate-800/50 text-slate-400 hover:text-blue-400 transition-colors duration-300 flex items-center justify-center"
-            title={isDarkMode ? "التبديل للوضع الفاتح" : "التبديل للوضع الداكن"}
-          >
-            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
         </div>
       </div>
       
@@ -541,57 +523,137 @@ export default function App() {
         setFilterCategory={setFilterCategory}
         activeCreativeTab={creativeTab}
         setActiveCreativeTab={setCreativeTab}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
       />
 
       {/* 2. MAIN WORKSPACE */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-6 sm:px-10 lg:px-12 py-16 md:py-24 space-y-20">
+      {/* Constant Background Logo Watermark */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden opacity-10">
+        <img src="/logo.png" alt="Logo Watermark" className="w-[90%] max-w-[800px] h-auto object-contain" />
+      </div>
+      <main className="relative z-10 flex-grow max-w-7xl w-full mx-auto px-6 sm:px-10 lg:px-12 py-16 md:py-24 space-y-20">
         
         {/* VIEW: HOME PAGE */}
         {/* VIEW: HOME PAGE */}
         {activeView === 'home' && (
-          <div className="space-y-20 sm:space-y-28">
+          <div className="space-y-20 sm:space-y-28 relative">
             
             {/* HERO HERO SECTION WITH ISLAMIC COLLEGE COMPLEX BRAND */}
-            <div className="relative rounded-3xl overflow-hidden glass border border-white/10 p-10 sm:p-16 lg:p-20 text-right flex flex-col justify-center min-h-[440px] md:min-h-[500px] lg:min-h-[560px] shadow-2xl">
+            <div className="relative z-10 rounded-3xl overflow-hidden glass border border-slate-500/20 p-10 sm:p-16 lg:p-20 text-right flex flex-col justify-center min-h-[440px] md:min-h-[500px] shadow-2xl">
               <div className="absolute inset-0 bg-gradient-to-l from-slate-950/90 via-slate-900/40 to-transparent z-0"></div>
-              {/* Overlay abstract background */}
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
               
               <div className="relative z-10 space-y-6 max-w-3xl">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900/60 border border-white/10 text-blue-300">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900/60 border border-slate-500/20 text-blue-300">
                   <Award className="w-3.5 h-3.5 text-blue-400" />
                   <span>المجلة الأكاديمية الرقمية الرسمية للجامعة</span>
                 </span>
                 
-                <h1 className="text-4xl sm:text-6xl font-black font-serif-ar text-slate-100 leading-tight tracking-tight">
+                <h1 className="text-4xl sm:text-6xl font-black font-brand text-slate-100 leading-tight tracking-tight">
                   {settings.siteName}
                 </h1>
                 
+                <div className="flex items-center gap-4 text-slate-500 opacity-60 my-2 select-none">
+                  <span className="w-12 h-px bg-slate-600"></span>
+                  <span className="text-xl">۞</span>
+                  <span className="w-12 h-px bg-slate-600"></span>
+                </div>
+
                 <p className="text-base sm:text-lg font-medium text-slate-300 leading-relaxed max-w-2xl">
                   {settings.aboutText}
                 </p>
 
-                <div className="flex flex-wrap gap-4 pt-4">
+                <div className="flex flex-wrap gap-4 pt-6">
                   <button
                     onClick={() => setActiveView('articles')}
-                    className="bg-blue-600 hover:bg-blue-500 font-bold font-tajawal text-sm px-8 py-3.5 rounded-xl transition shadow-lg shadow-blue-500/15 cursor-pointer"
+                    className="bg-blue-600 hover:bg-blue-500 text-white font-bold font-tajawal text-sm px-8 py-3.5 rounded-xl transition shadow-lg shadow-blue-500/15 cursor-pointer"
                   >
                     تصفح البحوث والمقالات
                   </button>
                   <button
                     onClick={() => setActiveView('editions')}
-                    className="bg-slate-900/80 hover:bg-slate-800/80 font-bold font-tajawal text-sm px-8 py-3.5 rounded-xl border border-slate-700/60 transition cursor-pointer"
+                    className="bg-slate-900/80 hover:bg-slate-800/80 text-slate-100 font-bold font-tajawal text-sm px-8 py-3.5 rounded-xl border border-slate-700/60 transition cursor-pointer"
                   >
                     تحميل أعداد الكتيب PDF
                   </button>
                 </div>
               </div>
 
-              {/* Float complex logo accent */}
-              <div className="absolute left-10 bottom-10 hidden lg:block select-none opacity-20 transform rotate-12 scale-150">
-                <BookOpen className="w-64 h-64 text-sky-500" />
+              <div className="absolute left-10 bottom-10 hidden lg:block select-none opacity-10 transform rotate-12 scale-150">
+                <BookOpen className="w-64 h-64 text-slate-400" />
               </div>
             </div>
+
+
+
+            {/* WHO WE ARE SECTION */}
+            <div className="relative z-10 glass border border-slate-500/20 rounded-3xl p-8 sm:p-12 overflow-hidden shadow-xl mt-8">
+              <div className="absolute inset-0 bg-blue-600/5 mix-blend-multiply dark:mix-blend-screen pointer-events-none"></div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center relative z-10">
+                <div className="space-y-6 text-right">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400">
+                    <User className="w-3.5 h-3.5" />
+                    <span>من نحن - قسم اللغة العربية وأدبها</span>
+                  </span>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 font-brand">
+                    رسالتنا ورؤيتنا في قسم اللغة العربية
+                  </h2>
+                  <p className="text-base font-medium leading-relaxed text-slate-700 dark:text-slate-300">
+                    نحن في قسم اللغة العربية وأدبها بجامعة KMOIA نسعى جاهدين لنشر علوم لغة الضاد وتأصيل الانتماء لهويتنا العربية والإسلامية. نقدم من خلال برامجنا الأكاديمية فهماً عميقاً للأدب العربي، والنقد، والبلاغة، وعلوم النحو والصرف، في بيئة تعليمية تجمع بين الأصالة والمعاصرة.
+                  </p>
+                  <p className="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">
+                    تهدف مجلة القسم "شذرات" لتكون النبراس الأكاديمي والمنبر الثقافي الذي ينشر إبداعات طلابنا وطالباتنا، ويبرز إسهاماتهم العلمية، ويعزز من مهاراتهم البحثية والإبداعية في مختلف ألوان الأدب والعلوم اللغوية.
+                  </p>
+                  <div className="pt-2 flex items-center justify-end gap-3 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                    <span>جامعة KMOIA للعلوم الإسلامية</span>
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden glass shadow-inner border border-slate-500/20 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/40 to-sky-600/20 z-10"></div>
+                  <img src="/logo.png" className="w-[60%] h-auto object-contain z-20 mix-blend-luminosity opacity-80" alt="شعار القسم" />
+                </div>
+              </div>
+            </div>
+
+            {/* EDITOR'S PICK SECTION */}
+            {articles.filter(a => a.isPublished).length > 2 && (
+              <div className="space-y-6">
+                 <h3 className="text-xl font-bold font-brand text-slate-100 flex items-center gap-4">
+                  اختيارات المحرر
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {articles.filter(a => a.isPublished).slice(0,3).map(art => {
+                    const category = categories.find(c => c.id === art.categoryId) || categories[0];
+                    return (
+                      <div 
+                        key={art.id} 
+                        onClick={() => handleOpenArticle(art.id)}
+                        className="glass border border-slate-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group flex flex-col h-[280px]"
+                      >
+                        <div className="h-40 w-full relative overflow-hidden">
+                          <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
+                          <span className={`absolute bottom-3 right-3 px-2 py-0.5 rounded text-[10px] font-bold border ${category.color}`}>
+                            {category.name}
+                          </span>
+                        </div>
+                        <div className="p-5 flex flex-col justify-between flex-grow">
+                          <h4 className="text-sm font-extrabold text-slate-100 font-brand line-clamp-2 leading-snug group-hover:text-blue-300 transition duration-300">
+                            {art.title}
+                          </h4>
+                          <div className="flex items-center justify-between mt-4 border-t border-slate-800/80 pt-3">
+                            <span className="text-[10px] text-slate-500 font-medium">قراءة: {art.readTime}</span>
+                            <span className="text-[10px] text-slate-400 font-medium">{art.createdAt}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* NEW PROMOTIONAL & SUBMISSION CALLOUT SECTION ("القسم الإبداعي والواحة الأدبية بمجلة شذرات") */}
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-950/20 via-slate-905 to-slate-950 border border-amber-500/15 p-8 sm:p-10 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
@@ -619,14 +681,14 @@ export default function App() {
                     setCreativeTab('poems');
                     setIsCreativeSubmitOpen(true);
                   }}
-                  className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-slate-100 hover:text-white font-bold font-tajawal text-xs px-6 py-3.5 rounded-xl transition shadow-lg shadow-amber-600/15 cursor-pointer text-center"
+                  className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white hover:text-slate-100 font-bold font-tajawal text-xs px-6 py-3.5 rounded-xl transition shadow-lg shadow-amber-600/15 cursor-pointer text-center"
                 >
                   <PenTool className="w-4 h-4" />
                   <span>{settings.creativeSectionBtnSubmit || "أضف مساهمتك المكتوبة"}</span>
                 </button>
                 <a
                   href={`mailto:${settings.submissionEmail || 'shadharat@gmail.com'}?subject=مساهمة في الواحة الأدبية - مجلة ${settings.siteName || 'شذرات'}`}
-                  className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-850 text-slate-300 hover:text-white font-semibold font-tajawal text-xs px-6 py-3.5 rounded-xl border border-slate-800 transition text-center"
+                  className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-850 text-slate-300 hover:text-slate-100 font-semibold font-tajawal text-xs px-6 py-3.5 rounded-xl border border-slate-800 transition text-center"
                 >
                   <FileText className="w-4 h-4 text-slate-400" />
                   <span>{settings.creativeSectionBtnContact || "مراسلة هيئة التحرير"}</span>
@@ -643,25 +705,33 @@ export default function App() {
                   <span>الواحة الروحية وعيون الشعر العربي اليومي</span>
                 </span>
                 <div className="mt-6 space-y-2 min-h-[80px] flex flex-col justify-center">
-                  {POEMS_LIST[activePoemIndex].lines.map((line, idx) => (
-                    <p key={idx} className="text-xl md:text-2xl font-serif-ar tracking-wide text-slate-100 font-semibold italic">
-                      {line}
-                    </p>
-                  ))}
-                  <span className="block mt-4 text-xs md:text-sm text-amber-300 font-bold font-tajawal">
-                    — الأديب/الشاعر: {POEMS_LIST[activePoemIndex].author}
-                  </span>
+                  {(settings.poems && settings.poems.length > 0) ? (
+                    <>
+                      {settings.poems[activePoemIndex]?.lines.map((line, idx) => (
+                        <p key={idx} className="text-xl md:text-2xl font-serif-ar tracking-wide text-slate-100 font-semibold italic">
+                          {line}
+                        </p>
+                      ))}
+                      <span className="block mt-4 text-xs md:text-sm text-amber-300 font-bold font-tajawal">
+                        — الأديب/الشاعر: {settings.poems[activePoemIndex]?.author}
+                      </span>
+                    </>
+                  ) : (
+                    <p className="text-slate-400 font-tajawal text-sm mt-4">لا توجد قصائد متاحة حالياً.</p>
+                  )}
                 </div>
               </div>
-              <div className="flex justify-center gap-2 pt-4">
-                {POEMS_LIST.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setActivePoemIndex(idx)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${activePoemIndex === idx ? 'bg-amber-400 w-6' : 'bg-slate-700 hover:bg-slate-500'}`}
-                  />
-                ))}
-              </div>
+              {settings.poems && settings.poems.length > 0 && (
+                <div className="flex justify-center gap-2 pt-4">
+                  {settings.poems.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActivePoemIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${activePoemIndex === idx ? 'bg-amber-400 w-6' : 'bg-slate-700 hover:bg-slate-500'}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* MULTI ANNOUNCEMENT CAROUSEL - SHOWING UP TO 3 NEWS AT ONE TIME */}
@@ -677,14 +747,14 @@ export default function App() {
                       <button
                         onClick={() => setAnnouncementPage(prev => Math.max(0, prev - 1))}
                         disabled={announcementPage === 0}
-                        className="p-1.5 px-4 rounded-xl bg-slate-800 text-slate-300 hover:text-white disabled:opacity-40 transition cursor-pointer text-xs font-bold"
+                        className="p-1.5 px-4 rounded-xl bg-slate-800 text-slate-300 hover:text-slate-100 disabled:opacity-40 transition cursor-pointer text-xs font-bold"
                       >
                         السابق
                       </button>
                       <button
                         onClick={() => setAnnouncementPage(prev => (prev + 3 < announcements.length ? prev + 3 : prev))}
                         disabled={announcementPage + 3 >= announcements.length}
-                        className="p-1.5 px-4 rounded-xl bg-slate-800 text-slate-300 hover:text-white disabled:opacity-40 transition cursor-pointer text-xs font-bold"
+                        className="p-1.5 px-4 rounded-xl bg-slate-800 text-slate-300 hover:text-slate-100 disabled:opacity-40 transition cursor-pointer text-xs font-bold"
                       >
                         التالي
                       </button>
@@ -708,7 +778,7 @@ export default function App() {
                       <div className="mt-6 pt-3 border-t border-slate-800/60 flex justify-end">
                         <button
                           onClick={() => alert(`[إعلان الحرم الجامعي] \n\n${ann.title}\n\n${ann.content}`)}
-                          className="text-[10px] text-blue-400 font-bold hover:text-white transition flex items-center gap-1 cursor-pointer"
+                          className="text-[10px] text-blue-400 font-bold hover:text-slate-100 transition flex items-center gap-1 cursor-pointer"
                         >
                           <span>قراءة الإعلان بالكامل</span>
                           <ChevronRight className="w-3.5 h-3.5 rotate-180" />
@@ -730,7 +800,7 @@ export default function App() {
                 {featuredArticle && (
                   <div 
                     onClick={() => handleOpenArticle(featuredArticle.id)}
-                    className="glass border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:shadow-2xl transition duration-300 cursor-pointer group hover:border-blue-500/30"
+                    className="glass border border-slate-500/20 rounded-3xl overflow-hidden shadow-2xl hover:shadow-2xl transition duration-300 cursor-pointer group hover:border-blue-500/30"
                   >
                     <div className="w-full h-[220px] sm:h-[300px] overflow-hidden relative">
                       <img
@@ -763,7 +833,7 @@ export default function App() {
                             e.stopPropagation();
                             handleOpenArticle(featuredArticle.id);
                           }}
-                          className="flex items-center gap-1 text-xs font-bold text-sky-400 hover:text-white transition font-tajawal cursor-pointer"
+                          className="flex items-center gap-1 text-xs font-bold text-sky-400 hover:text-slate-100 transition font-tajawal cursor-pointer"
                         >
                           <span>قراءة البحث بالكامل</span>
                           <ChevronRight className="w-4 h-4 transform rotate-180" />
@@ -779,7 +849,7 @@ export default function App() {
                     <h3 className="text-xl font-bold font-serif-ar text-slate-100">{settings.articlesSectionTitle || "أحدث المقالات المتاحة للمطالعة"}</h3>
                     <button
                       onClick={() => setActiveView('articles')}
-                      className="text-xs font-semibold text-blue-400 hover:text-white transition"
+                      className="text-xs font-semibold text-blue-400 hover:text-slate-100 transition"
                     >
                       عرض جميع المقالات ({articles.length})
                     </button>
@@ -792,7 +862,7 @@ export default function App() {
                         <div 
                           key={art.id} 
                           onClick={() => handleOpenArticle(art.id)}
-                          className="glass hover:bg-[var(--blue-hover)] hover:border-blue-500/30 border border-white/10 p-5 rounded-2xl flex flex-col justify-between h-[210px] shadow-lg transition hover:-translate-y-1 cursor-pointer group"
+                          className="glass hover:bg-[var(--blue-hover)] hover:border-blue-500/30 border border-slate-500/20 p-5 rounded-2xl flex flex-col justify-between h-[210px] shadow-lg transition hover:-translate-y-1 cursor-pointer group"
                         >
                           <div className="space-y-2">
                             <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${category.color} inline-block`}>
@@ -806,7 +876,7 @@ export default function App() {
                             </p>
                           </div>
 
-                          <div className="flex items-center justify-between border-t border-white/10 pt-3 mt-3">
+                          <div className="flex items-center justify-between border-t border-slate-500/20 pt-3 mt-3">
                             <span className="text-[10px] font-semibold text-slate-500">
                               قراءة: {art.readTime}
                             </span>
@@ -815,7 +885,7 @@ export default function App() {
                                 e.stopPropagation();
                                 handleOpenArticle(art.id);
                               }}
-                              className="text-xs font-bold text-sky-400 hover:text-white transition cursor-pointer"
+                              className="text-xs font-bold text-sky-400 hover:text-slate-100 transition cursor-pointer"
                             >
                               اقرأ الآن
                             </button>
@@ -832,15 +902,15 @@ export default function App() {
               <div className="space-y-6">
                 
                 {/* PDF LIBRARY CARDS VIEW */}
-                <div className="glass border border-white/10 rounded-3xl p-6 space-y-4 shadow-2xl">
-                  <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                <div className="glass border border-slate-500/20 rounded-3xl p-6 space-y-4 shadow-2xl">
+                  <div className="flex justify-between items-center border-b border-slate-500/20 pb-3">
                     <h3 className="text-sm font-bold text-slate-200 font-serif-ar">{settings.editionsSectionTitle || "النسخة الورقية المطبوعة PDF"}</h3>
                     <BookOpen className="w-5 h-5 text-emerald-400" />
                   </div>
                   
                   {editions.slice(0, 1).map(ed => (
                     <div key={ed.id} className="space-y-3">
-                      <div className="w-full h-44 rounded-xl bg-slate-900/80 overflow-hidden relative border border-white/10">
+                      <div className="w-full h-44 rounded-xl overflow-hidden relative border border-slate-500/20">
                         <img 
                           src={ed.coverUrl} 
                           alt="غلاف العدد الكامل" 
@@ -876,14 +946,14 @@ export default function App() {
                 </div>
 
                 {/* EVENTS Bento Grid component */}
-                <div className="glass border border-white/10 rounded-3xl p-6 space-y-4 shadow-2xl">
-                  <h3 className="text-sm font-bold text-slate-200 border-b border-white/10 pb-3 font-serif-ar">
+                <div className="glass border border-slate-500/20 rounded-3xl p-6 space-y-4 shadow-2xl">
+                  <h3 className="text-sm font-bold text-slate-200 border-b border-slate-500/20 pb-3 font-serif-ar">
                     {settings.eventsSectionTitle || "الندوات والفعاليات الأكاديمية لمجلتنا"}
                   </h3>
                   
                   <div className="space-y-3">
                     {events.map(ev => (
-                      <div key={ev.id} className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
+                      <div key={ev.id} className="p-3 rounded-xl bg-slate-400/10 border border-white/5 space-y-1">
                         <h4 className="font-extrabold text-slate-200 text-xs leading-normal font-serif-ar">{ev.title}</h4>
                         <p className="text-[10px] text-slate-400 leading-relaxed font-medium">{ev.description}</p>
                         <div className="flex justify-between items-center text-[9px] font-bold text-blue-400 pt-1">
@@ -895,18 +965,30 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* PHOTOGRAPHY OF EDUCATION GALLERY */}
-                <div className="glass border border-white/10 rounded-3xl p-6 space-y-4 shadow-2xl">
-                  <h3 className="text-sm font-bold text-slate-200 border-b border-white/10 pb-3 font-serif-ar">{settings.gallerySectionTitle || "البوم صور المجمع"}</h3>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    {galleryItems.slice(0, 2).map((pic, idx) => (
-                      <div key={pic.id} className="group relative rounded-xl overflow-hidden h-24 bg-slate-800 border border-white/10 cursor-pointer" title={pic.title}>
-                        <img src={pic.imageUrl} alt={pic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-200" referrerPolicy="no-referrer" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
-                        <span className="absolute bottom-1 right-2 text-[8px] font-bold text-slate-300 truncate max-w-[100px]">{pic.title}</span>
-                      </div>
-                    ))}
+                {/* MOST READ WIDGET */}
+                <div className="glass border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
+                  <h3 className="text-sm font-bold text-slate-200 border-b border-slate-800 pb-3 font-brand text-right flex justify-between items-center">
+                    الأكثر قراءة
+                    <span className="text-xl">۞</span>
+                  </h3>
+                  <div className="space-y-4">
+                    {articles.filter(a => a.isPublished).sort((a,b) => b.views - a.views).slice(0, 4).map((art, idx) => {
+                      const category = categories.find(c => c.id === art.categoryId) || categories[0];
+                      return (
+                        <div key={art.id} onClick={() => handleOpenArticle(art.id)} className="group flex gap-3 items-center cursor-pointer text-right">
+                           <span className="text-2xl font-brand font-black text-slate-800 group-hover:text-amber-600 transition-colors">
+                              {idx + 1}
+                           </span>
+                           <div className="flex-grow min-w-0">
+                              <h4 className="text-xs font-bold text-slate-200 font-brand truncate group-hover:text-blue-400 transition-colors">{art.title}</h4>
+                               <div className="flex items-center gap-2 mt-1">
+                                <span className={`text-[9px] font-bold ${category.color} bg-transparent px-0`}>{category.name}</span>
+                                <span className="text-[9px] text-slate-500">| {art.views} قراءة</span>
+                               </div>
+                           </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -941,7 +1023,7 @@ export default function App() {
                 {(searchQuery || filterCategory !== null) && (
                   <button
                     onClick={() => { setSearchQuery(''); setFilterCategory(null); }}
-                    className="px-4 py-2 text-xs font-bold font-tajawal bg-slate-800 text-slate-300 rounded-xl hover:text-white transition cursor-pointer"
+                    className="px-4 py-2 text-xs font-bold font-tajawal bg-slate-800 text-slate-300 rounded-xl hover:text-slate-100 transition cursor-pointer"
                   >
                     إعادة ضبط الفلاتر
                   </button>
@@ -996,20 +1078,21 @@ export default function App() {
                     <div 
                       key={art.id} 
                       onClick={() => handleOpenArticle(art.id)}
-                      className="bg-slate-900/40 border border-slate-800 rounded-3xl overflow-hidden shadow-md flex flex-col justify-between h-[380px] hover:shadow-xl hover:bg-[var(--blue-hover)] hover:border-blue-500/30 transition cursor-pointer group"
+                      className="glass border border-slate-800/80 rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between h-[380px] hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
                     >
                       <div>
                         {/* Optional photo banner */}
                         {art.imageUrl && (
-                          <div className="w-full h-40 bg-slate-950 overflow-hidden relative">
-                            <img src={art.imageUrl} className="w-full h-full object-cover shrink-0 group-hover:scale-[1.02] transition duration-500" alt="صورة المقال" referrerPolicy="no-referrer" />
+                          <div className="w-full h-44 overflow-hidden relative">
+                            <img src={art.imageUrl} className="w-full h-full object-cover shrink-0 group-hover:scale-105 transition-transform duration-700" alt="صورة المقال" referrerPolicy="no-referrer" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <span className={`absolute bottom-3 right-3 px-2 py-0.5 rounded text-[10px] font-bold border ${category.color}`}>
+                              {category.name}
+                            </span>
                           </div>
                         )}
-                        <div className="p-5 space-y-2">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${category.color} inline-block`}>
-                            {category.name}
-                          </span>
-                          <h4 className="text-base font-extrabold text-slate-200 font-tajawal line-clamp-2 leading-relaxed group-hover:text-blue-300 transition duration-300">
+                        <div className="p-5 space-y-3">
+                          <h4 className="text-base font-extrabold text-slate-100 font-brand line-clamp-2 leading-relaxed group-hover:text-blue-300 transition duration-300">
                             {art.title}
                           </h4>
                           <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed font-semibold">
@@ -1018,18 +1101,19 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="p-5 border-t border-slate-850 justify-between flex items-center bg-slate-950/20">
-                        <span className="text-[10px] font-bold text-blue-400 font-tajawal">
-                          الشيخ: {scholar?.name.replace('أ.د. ', '')}
-                        </span>
+                      <div className="px-5 py-4 border-t border-slate-800/80 justify-between flex items-center">
+                        <div className="flex flex-col gap-1 text-[10px] text-slate-500 font-medium">
+                          <span className="font-bold text-sky-400">الكاتب: {scholar?.name}</span>
+                          <span>{art.createdAt} • قراءة: {art.readTime}</span>
+                        </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenArticle(art.id);
                           }}
-                          className="text-xs font-bold text-sky-400 hover:text-white transition cursor-pointer"
+                          className="text-xs font-bold text-sky-400 hover:text-slate-100 transition cursor-pointer"
                         >
-                          قراءة المقال
+                          اقرأ المقال
                         </button>
                       </div>
                     </div>
@@ -1059,37 +1143,144 @@ export default function App() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {editions.map(ed => (
-                <div key={ed.id} className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 flex flex-col md:flex-row gap-6 items-center shadow shadow-blue-900/5">
-                  <div className="w-36 h-48 bg-slate-950 rounded-2xl overflow-hidden shrink-0 border border-slate-800">
-                    <img src={ed.coverUrl} className="w-full h-full object-cover" alt="غلاف الكتيب" referrerPolicy="no-referrer" />
-                  </div>
-                  <div className="space-y-3 text-right">
-                    <h3 className="text-lg font-bold text-slate-200 font-tajawal">{ed.title}</h3>
-                    <p className="text-xs text-slate-400 font-semibold leading-relaxed">
-                      {ed.description}
-                    </p>
-                    <span className="text-[10px] text-slate-500 font-bold block pt-1">تاريخ الإصدار الأكاديمي: {ed.publishDate}</span>
-                    
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={() => handleOpenPdf(ed.id, ed.title)}
-                        className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>قراءة كتيب PDF</span>
-                      </button>
-                      <button
-                        onClick={() => setSelectedEditionForIndex(ed.id)}
-                        className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-slate-100 font-semibold text-xs px-4 py-2.5 rounded-xl border border-slate-700/50 transition cursor-pointer"
-                      >
-                        مطالعة الفهرس التكراري
-                      </button>
+            <div className="space-y-12">
+              {/* Nabda Section */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold font-brand text-slate-100 flex items-center gap-4">
+                  <span className="text-slate-500 text-sm">────────❖────────</span>
+                  صحيفة نبضة
+                  <span className="text-slate-500 text-sm">────────❖────────</span>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {editions.filter(ed => ed.category === 'نبضة' || ed.title.includes('نبضة')).length > 0 ? (
+                    editions.filter(ed => ed.category === 'نبضة' || ed.title.includes('نبضة')).map(ed => (
+                    <div key={ed.id} className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 flex flex-col md:flex-row gap-6 items-center shadow shadow-blue-900/5">
+                      <div className="w-36 h-48 bg-slate-950 rounded-2xl overflow-hidden shrink-0 border border-slate-800">
+                        <img src={ed.coverUrl} className="w-full h-full object-cover" alt="غلاف الكتيب" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="space-y-3 text-right">
+                        <h3 className="text-lg font-bold text-slate-200 font-tajawal">{ed.title}</h3>
+                        <p className="text-xs text-slate-400 font-semibold leading-relaxed">
+                          {ed.description}
+                        </p>
+                        <span className="text-[10px] text-slate-500 font-bold block pt-1">تاريخ الإصدار الأكاديمي: {ed.publishDate}</span>
+                        
+                        <div className="flex gap-3 pt-2">
+                          <button
+                            onClick={() => handleOpenPdf(ed.id, ed.title)}
+                            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
+                          >
+                            <BookOpen className="w-4 h-4" />
+                            <span>قراءة كتيب PDF</span>
+                          </button>
+                          <button
+                            onClick={() => setSelectedEditionForIndex(ed.id)}
+                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-slate-100 font-semibold text-xs px-4 py-2.5 rounded-xl border border-slate-700/50 transition cursor-pointer"
+                          >
+                            مطالعة الفهرس التكراري
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))) : (
+                    <div className="col-span-full py-8 text-center text-slate-500 font-tajawal text-sm border border-dashed border-slate-800 rounded-2xl">
+                      لا توجد أعداد منشورة حالياً في هذا القسم.
+                    </div>
+                  )}
                 </div>
-              ))}
+              </div>
+
+              {/* Urwah Section */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold font-brand text-slate-100 flex items-center gap-4">
+                  <span className="text-slate-500 text-sm">────────❖────────</span>
+                  مجلة عروة
+                  <span className="text-slate-500 text-sm">────────❖────────</span>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {editions.filter(ed => ed.category === 'عروة' || (!ed.category && !ed.title.includes('نبضة') && !ed.title.includes('الأطفال'))).length > 0 ? (
+                    editions.filter(ed => ed.category === 'عروة' || (!ed.category && !ed.title.includes('نبضة') && !ed.title.includes('الأطفال'))).map(ed => (
+                    <div key={ed.id} className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 flex flex-col md:flex-row gap-6 items-center shadow shadow-blue-900/5">
+                      <div className="w-36 h-48 bg-slate-950 rounded-2xl overflow-hidden shrink-0 border border-slate-800">
+                        <img src={ed.coverUrl} className="w-full h-full object-cover" alt="غلاف الكتيب" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="space-y-3 text-right">
+                        <h3 className="text-lg font-bold text-slate-200 font-tajawal">{ed.title}</h3>
+                        <p className="text-xs text-slate-400 font-semibold leading-relaxed">
+                          {ed.description}
+                        </p>
+                        <span className="text-[10px] text-slate-500 font-bold block pt-1">تاريخ الإصدار الأكاديمي: {ed.publishDate}</span>
+                        
+                        <div className="flex gap-3 pt-2">
+                          <button
+                            onClick={() => handleOpenPdf(ed.id, ed.title)}
+                            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
+                          >
+                            <BookOpen className="w-4 h-4" />
+                            <span>قراءة كتيب PDF</span>
+                          </button>
+                          <button
+                            onClick={() => setSelectedEditionForIndex(ed.id)}
+                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-slate-100 font-semibold text-xs px-4 py-2.5 rounded-xl border border-slate-700/50 transition cursor-pointer"
+                          >
+                            مطالعة الفهرس التكراري
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))) : (
+                    <div className="col-span-full py-8 text-center text-slate-500 font-tajawal text-sm border border-dashed border-slate-800 rounded-2xl">
+                      لا توجد أعداد منشورة حالياً في هذا القسم.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Kids Urwah Section */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold font-brand text-slate-100 flex items-center gap-4">
+                  <span className="text-slate-500 text-sm">────────❖────────</span>
+                  عروة الأطفال
+                  <span className="text-slate-500 text-sm">────────❖────────</span>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {editions.filter(ed => ed.category === 'عروة الأطفال' || ed.title.includes('الأطفال')).length > 0 ? (
+                    editions.filter(ed => ed.category === 'عروة الأطفال' || ed.title.includes('الأطفال')).map(ed => (
+                    <div key={ed.id} className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 flex flex-col md:flex-row gap-6 items-center shadow shadow-blue-900/5">
+                      <div className="w-36 h-48 bg-slate-950 rounded-2xl overflow-hidden shrink-0 border border-slate-800">
+                        <img src={ed.coverUrl} className="w-full h-full object-cover" alt="غلاف الكتيب" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="space-y-3 text-right">
+                        <h3 className="text-lg font-bold text-slate-200 font-tajawal">{ed.title}</h3>
+                        <p className="text-xs text-slate-400 font-semibold leading-relaxed">
+                          {ed.description}
+                        </p>
+                        <span className="text-[10px] text-slate-500 font-bold block pt-1">تاريخ الإصدار الأكاديمي: {ed.publishDate}</span>
+                        
+                        <div className="flex gap-3 pt-2">
+                          <button
+                            onClick={() => handleOpenPdf(ed.id, ed.title)}
+                            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
+                          >
+                            <BookOpen className="w-4 h-4" />
+                            <span>قراءة كتيب PDF</span>
+                          </button>
+                          <button
+                            onClick={() => setSelectedEditionForIndex(ed.id)}
+                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-slate-100 font-semibold text-xs px-4 py-2.5 rounded-xl border border-slate-700/50 transition cursor-pointer"
+                          >
+                            مطالعة الفهرس التكراري
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))) : (
+                    <div className="col-span-full py-8 text-center text-slate-500 font-tajawal text-sm border border-dashed border-slate-800 rounded-2xl">
+                      لا توجد أعداد منشورة حالياً في هذا القسم.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* EDITIONS INDEX MODAL */}
@@ -1179,7 +1370,7 @@ export default function App() {
                                       setActiveView('reader');
                                       setSelectedEditionForIndex(null);
                                     }}
-                                    className="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/10 hover:border-transparent text-[11px] font-extrabold px-3 py-2 rounded-xl transition cursor-pointer shrink-0"
+                                    className="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-slate-100 border border-blue-500/10 hover:border-transparent text-[11px] font-extrabold px-3 py-2 rounded-xl transition cursor-pointer shrink-0"
                                   >
                                     قراءة البحث
                                   </button>
@@ -1230,7 +1421,9 @@ export default function App() {
               <Reader 
                 article={art} 
                 category={cat} 
-                author={aut} 
+                author={aut}
+                articles={articles}
+                onOpenArticle={(id) => setSelectedArticleId(id)}
                 onBack={() => {
                   setActiveView('home'); 
                   setSelectedArticleId(null);
@@ -1271,7 +1464,7 @@ export default function App() {
               /* Administrative verification login modal panel */
               <div className="max-w-md mx-auto bg-slate-905 border border-blue-900/30 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl backdrop-blur-md">
                 <div className="text-center space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-400 flex items-center justify-center mx-auto text-white shadow-lg">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-400 flex items-center justify-center mx-auto text-slate-100 shadow-lg">
                     <Lock className="w-5 h-5" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-100 font-tajawal">هيئة الرقابة: بوابة الإشراف والمصادقة للناشرين</h3>
@@ -1332,13 +1525,13 @@ export default function App() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-5xl h-full flex flex-col overflow-hidden shadow-2xl">
             <div className="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-950/50">
-              <h3 className="text-white font-bold font-tajawal flex items-center gap-2">
+              <h3 className="text-slate-100 font-bold font-tajawal flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-emerald-500" />
                 تصفح العدد رقمياً
               </h3>
               <button 
                 onClick={() => setPdfViewerUrl(null)}
-                className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800/50 transition cursor-pointer"
+                className="text-slate-400 hover:text-slate-100 p-2 rounded-full hover:bg-slate-800/50 transition cursor-pointer"
               >
                 إغلاق
               </button>

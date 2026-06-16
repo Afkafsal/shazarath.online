@@ -12,6 +12,8 @@ interface ReaderProps {
   article: Article;
   author: Author;
   category: Category;
+  articles: Article[];
+  onOpenArticle: (id: number) => void;
   onBack: () => void;
   onLikeToggle: (id: number) => void;
   isLikedByUser: boolean;
@@ -21,6 +23,8 @@ export default function Reader({
   article,
   author,
   category,
+  articles,
+  onOpenArticle,
   onBack,
   onLikeToggle,
   isLikedByUser
@@ -121,10 +125,10 @@ export default function Reader({
       ></div>
 
       {/* Top action header bar */}
-      <div className="flex justify-between items-center glass border border-white/10 rounded-2xl p-4 mb-6 shadow-2xl">
+      <div className="flex justify-between items-center glass border border-slate-500/20 rounded-2xl p-4 mb-6 shadow-2xl">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl transition font-tajawal text-xs font-bold cursor-pointer"
+          className="flex items-center gap-1 text-slate-300 hover:text-slate-100 bg-slate-400/10 hover:bg-slate-400/20 border border-slate-500/20 px-4 py-2 rounded-xl transition font-tajawal text-xs font-bold cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>العودة للمجلة</span>
@@ -132,11 +136,11 @@ export default function Reader({
 
         <div className="flex gap-2">
           {/* FontSize switcher */}
-          <div className="flex bg-white/5 rounded-xl p-1 border border-white/10">
+          <div className="flex bg-slate-400/10 rounded-xl p-1 border border-slate-500/20">
             <button
               onClick={() => setFontSize('sm')}
               className={`p-1.5 px-3 rounded-lg text-xs font-bold transition font-tajawal ${
-                fontSize === 'sm' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                fontSize === 'sm' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               صغير
@@ -144,7 +148,7 @@ export default function Reader({
             <button
               onClick={() => setFontSize('md')}
               className={`p-1.5 px-3 rounded-lg text-xs font-bold transition font-tajawal ${
-                fontSize === 'md' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                fontSize === 'md' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               متوسط
@@ -152,7 +156,7 @@ export default function Reader({
             <button
               onClick={() => setFontSize('lg')}
               className={`p-1.5 px-3 rounded-lg text-xs font-bold transition font-tajawal ${
-                fontSize === 'lg' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                fontSize === 'lg' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               كبير
@@ -160,7 +164,7 @@ export default function Reader({
             <button
               onClick={() => setFontSize('xl')}
               className={`p-1.5 px-3 rounded-lg text-xs font-bold transition font-tajawal ${
-                fontSize === 'xl' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                fontSize === 'xl' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               ضخم
@@ -173,7 +177,7 @@ export default function Reader({
             className={`p-2 rounded-xl border transition cursor-pointer flex gap-1.5 items-center text-xs font-bold ${
               showQrCode
                 ? 'bg-blue-900/40 text-blue-300 border-blue-600/50'
-                : 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300 hover:text-white'
+                : 'bg-slate-400/10 hover:bg-slate-400/20 border-slate-500/20 text-slate-300 hover:text-slate-100'
             }`}
             title="توليد رمز الاستجابة السريعة (QR Code)"
           >
@@ -184,7 +188,7 @@ export default function Reader({
           {/* Share */}
           <button
             onClick={handleShare}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition cursor-pointer"
+            className="p-2.5 rounded-xl bg-slate-400/10 hover:bg-slate-400/20 border border-slate-500/20 text-slate-300 hover:text-slate-100 transition cursor-pointer"
             title="نسخ رابط المقال"
           >
             <Share2 className="w-4 h-4" />
@@ -196,7 +200,7 @@ export default function Reader({
             className={`p-2 rounded-xl transition font-bold text-xs flex items-center gap-1.5 border cursor-pointer ${
               isLikedByUser
                 ? 'bg-rose-950/40 text-rose-400 border-rose-500/50'
-                : 'bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-rose-400'
+                : 'bg-slate-400/10 hover:bg-slate-400/20 border border-slate-500/20 text-slate-400 hover:text-rose-400'
             }`}
           >
             <Heart className={`w-4 h-4 ${isLikedByUser ? 'fill-rose-500 text-rose-500' : ''}`} />
@@ -223,7 +227,7 @@ export default function Reader({
             <canvas ref={qrRef} width={200} height={200} className="rounded-lg shadow-inner"></canvas>
           </div>
           <div className="md:col-span-2 space-y-3">
-            <h4 className="text-lg font-bold font-serif-ar text-white flex items-center gap-2">
+            <h4 className="text-lg font-bold font-serif-ar text-slate-100 flex items-center gap-2">
               <QrCode className="text-sky-400 w-5 h-5" />
               <span>رمز الاستجابة السريعة (QR Code) للمقال</span>
             </h4>
@@ -261,7 +265,7 @@ export default function Reader({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         
         {/* Main Article Contents (Cols: 3) */}
-        <div className="lg:col-span-3 glass border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-md">
+        <div className="lg:col-span-3 glass border border-slate-500/20 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-md">
           {/* Header Metadata */}
           <div className="space-y-4 mb-6">
             <div className="flex flex-wrap items-center gap-3">
@@ -279,7 +283,7 @@ export default function Reader({
               {article.title}
             </h1>
 
-            <div className="flex flex-wrap text-xs text-slate-400 gap-4 pt-1 font-semibold border-b border-white/10 pb-5">
+            <div className="flex flex-wrap text-xs text-slate-400 gap-4 pt-1 font-semibold border-b border-slate-500/20 pb-5">
               <span className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-blue-500" />
                 <span>نُشر في {article.createdAt}</span>
@@ -297,7 +301,7 @@ export default function Reader({
 
           {/* Banner cover Image */}
           {article.imageUrl && (
-            <div className="w-full h-[250px] sm:h-[400px] rounded-2xl overflow-hidden mb-8 shadow-inner border border-white/10">
+            <div className="w-full h-[250px] sm:h-[400px] rounded-2xl overflow-hidden mb-8 shadow-inner border border-slate-500/20">
               <img
                 src={article.imageUrl}
                 alt={article.title}
@@ -311,14 +315,64 @@ export default function Reader({
           <div className="font-tajawal text-slate-300 leading-relaxed select-text mt-8 pt-4">
             <TiptapRenderer content={article.content} fontSize={fontSize} />
           </div>
+
+          {/* Tags */}
+          {article.tags && article.tags.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-slate-800 flex flex-wrap gap-2 items-center">
+              <span className="text-sm font-bold text-slate-400 ml-2">كلمات مفتاحية:</span>
+              {article.tags.map((tag, i) => (
+                <span key={i} className="px-3 py-1 bg-slate-800/80 text-slate-300 rounded-lg text-[11px] font-bold border border-slate-700">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Related Articles */}
+          <div className="mt-16 pt-8 border-t border-slate-800">
+            <h3 className="text-2xl font-bold font-brand text-slate-100 flex items-center gap-4 mb-8">
+              <span className="text-slate-500 text-sm">────────❖────────</span>
+              قد يعجبك أيضاً
+              <span className="text-slate-500 text-sm">────────❖────────</span>
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {articles
+                .filter(a => a.id !== article.id && a.isPublished && a.categoryId === article.categoryId)
+                .slice(0, 3)
+                .map(art => (
+                  <div 
+                    key={art.id} 
+                    onClick={() => {
+                      onOpenArticle(art.id);
+                      window.scrollTo(0,0);
+                    }}
+                    className="glass border border-slate-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group flex flex-col h-[260px]"
+                  >
+                    <div className="h-32 w-full relative overflow-hidden">
+                      <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
+                    </div>
+                    <div className="p-4 flex flex-col justify-between flex-grow">
+                      <h4 className="text-sm font-extrabold text-slate-100 font-brand line-clamp-2 leading-snug group-hover:text-blue-300 transition duration-300">
+                        {art.title}
+                      </h4>
+                      <div className="flex items-center justify-between mt-4">
+                        <span className="text-[10px] text-slate-500 font-medium">قراءة: {art.readTime}</span>
+                        <span className="text-[10px] text-slate-400 font-medium">{art.createdAt}</span>
+                      </div>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Sidebar Widgets (Author card & info) (Cols: 1) */}
         <div className="lg:col-span-1 space-y-6">
           
           {/* Author Card */}
-          <div className="glass border border-white/10 rounded-3xl p-6 shadow-2xl">
-            <h3 className="text-sm font-bold text-slate-400 border-b border-white/10 pb-3 mb-4 font-serif-ar">
+          <div className="glass border border-slate-500/20 rounded-3xl p-6 shadow-2xl">
+            <h3 className="text-sm font-bold text-slate-400 border-b border-slate-500/20 pb-3 mb-4 font-serif-ar">
               كاتب المقال
             </h3>
             <div className="flex items-center gap-3.5 mb-4 justify-start">
@@ -343,8 +397,8 @@ export default function Reader({
           </div>
 
           {/* Category Card details */}
-          <div className="glass border border-white/10 rounded-3xl p-6 shadow-2xl">
-            <h3 className="text-sm font-bold text-slate-400 border-b border-white/10 pb-3 mb-3 font-serif-ar">
+          <div className="glass border border-slate-500/20 rounded-3xl p-6 shadow-2xl">
+            <h3 className="text-sm font-bold text-slate-400 border-b border-slate-500/20 pb-3 mb-3 font-serif-ar">
               القسم والمجال التحريري
             </h3>
             <span className={`px-2.5 py-1 rounded-full text-xs font-extrabold border ${category.color} inline-block mb-3`}>
@@ -356,7 +410,7 @@ export default function Reader({
           </div>
 
           {/* Submission and Contacts info */}
-          <div className="glass border border-white/10 rounded-3xl p-6 shadow-2xl space-y-3">
+          <div className="glass border border-slate-500/20 rounded-3xl p-6 shadow-2xl space-y-3">
             <h4 className="text-sm font-bold text-slate-100 font-serif-ar">هل تود نشر مقالك هنا؟</h4>
             <p className="text-xs text-slate-400 leading-relaxed font-medium">
               إن مجلة الاعتصام لسان جامعتنا ومظلتها العلمية، وتستقبل المشاركات والبحوث بشكل يدوي ومنهجي للتقييم والتحكيم بواسطة هيئة التحرير.

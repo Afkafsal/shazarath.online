@@ -335,7 +335,7 @@ export default function CreativeOasis({
     <div className="w-full text-right space-y-8" dir="rtl" id="creative-oasis shadow-2xl">
       
       {/* 1. Header Banner */}
-      <div className="relative rounded-3xl overflow-hidden glass p-8 sm:p-12 border border-white/10 shadow-2xl">
+      <div className="relative rounded-3xl overflow-hidden glass p-8 sm:p-12 border border-slate-500/20 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-l from-amber-950/20 via-blue-950/40 to-transparent z-0"></div>
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"></div>
         
@@ -344,7 +344,7 @@ export default function CreativeOasis({
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>{settings?.creativeSectionBadge || `القسم الإبداعي والواحة الأدبية بمجلة ${settings?.siteName || 'شذرات'}`}</span>
           </span>
-          <h1 className="text-3xl sm:text-5xl font-black font-serif-ar text-white leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-black font-serif-ar text-slate-100 leading-tight">
             {settings?.creativeSectionTitle || "الواحة الأدبية والأقلام الواعدة"}
           </h1>
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl font-medium">
@@ -354,14 +354,14 @@ export default function CreativeOasis({
           <div className="flex gap-4 pt-2">
             <button
               onClick={() => setSubmitOpenState(true)}
-              className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-slate-100 font-bold px-5 py-3 rounded-xl transition shadow-lg shadow-amber-600/10 cursor-pointer"
+              className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-bold px-5 py-3 rounded-xl transition shadow-lg shadow-amber-600/10 cursor-pointer"
             >
               <PenTool className="w-4 h-4" />
               <span>{settings?.creativeSectionBtnSubmit || "أضف مساهمتك المكتوبة"}</span>
             </button>
             <a
               href={`mailto:${settings?.submissionEmail || 'iathisammonthly@gmail.com'}?subject=الواحة الأدبية - اقتراح`}
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white font-semibold px-5 py-3 rounded-xl border border-white/10 transition cursor-pointer"
+              className="flex items-center gap-2 bg-slate-400/10 hover:bg-slate-400/20 text-slate-200 hover:text-slate-100 font-semibold px-5 py-3 rounded-xl border border-slate-500/20 transition cursor-pointer"
             >
               <FileText className="w-4 h-4" />
               <span>{settings?.creativeSectionBtnContact || "مراسلة هيئة التحرير"}</span>
@@ -387,12 +387,12 @@ export default function CreativeOasis({
           className={`flex items-center justify-center gap-3 p-5 rounded-2xl border transition cursor-pointer ${
             activeTab === 'poems'
               ? 'bg-amber-600/10 border-amber-500 text-amber-300 shadow-md'
-              : 'glass border-white/10 text-slate-400 hover:bg-white/5 hover:text-slate-200'
+              : 'glass border-slate-500/20 text-slate-400 hover:bg-slate-400/10 hover:text-slate-200'
           }`}
         >
           <Quote className="w-6 h-6 shrink-0" />
           <div className="text-right">
-            <h4 className="font-bold text-sm font-serif-ar text-white">القصائد والدواوين</h4>
+            <h4 className="font-bold text-sm font-serif-ar text-slate-100">القصائد والدواوين</h4>
             <span className="text-[10px] text-slate-400 font-medium block">أبيات من عيون الشعر وبحور الفصاحة</span>
           </div>
         </button>
@@ -402,12 +402,12 @@ export default function CreativeOasis({
           className={`flex items-center justify-center gap-3 p-5 rounded-2xl border transition cursor-pointer ${
             activeTab === 'stories'
               ? 'bg-blue-600/10 border-blue-500 text-blue-300 shadow-md'
-              : 'glass border-white/10 text-slate-400 hover:bg-white/5 hover:text-slate-200'
+              : 'glass border-slate-500/20 text-slate-400 hover:bg-slate-400/10 hover:text-slate-200'
           }`}
         >
           <BookOpen className="w-6 h-6 shrink-0" />
           <div className="text-right">
-            <h4 className="font-bold text-sm font-serif-ar text-white">القصص والعِبر الصالحة</h4>
+            <h4 className="font-bold text-sm font-serif-ar text-slate-100">القصص والعِبر الصالحة</h4>
             <span className="text-[10px] text-slate-400 font-medium block">سرد نثري راقي يقدّم الحكمة</span>
           </div>
         </button>
@@ -417,12 +417,12 @@ export default function CreativeOasis({
           className={`flex items-center justify-center gap-3 p-5 rounded-2xl border transition cursor-pointer ${
             activeTab === 'travelogues'
               ? 'bg-emerald-600/10 border-emerald-500 text-emerald-300 shadow-md'
-              : 'glass border-white/10 text-slate-400 hover:bg-white/5 hover:text-slate-200'
+              : 'glass border-slate-500/20 text-slate-400 hover:bg-slate-400/10 hover:text-slate-200'
           }`}
         >
           <Compass className="w-6 h-6 shrink-0" />
           <div className="text-right">
-            <h4 className="font-bold text-sm font-serif-ar text-white">أدب الرحلات</h4>
+            <h4 className="font-bold text-sm font-serif-ar text-slate-100">أدب الرحلات</h4>
             <span className="text-[10px] text-slate-400 font-medium block">مذكرات الأسفار والرحالة</span>
           </div>
         </button>
@@ -432,12 +432,12 @@ export default function CreativeOasis({
           className={`flex items-center justify-center gap-3 p-5 rounded-2xl border transition cursor-pointer ${
             activeTab === 'newspapers'
               ? 'bg-indigo-600/10 border-indigo-500 text-indigo-300 shadow-md'
-              : 'glass border-white/10 text-slate-400 hover:bg-white/5 hover:text-slate-200'
+              : 'glass border-slate-500/20 text-slate-400 hover:bg-slate-400/10 hover:text-slate-200'
           }`}
         >
           <FileText className="w-6 h-6 shrink-0" />
           <div className="text-right">
-            <h4 className="font-bold text-sm font-serif-ar text-white">صحيفة القسم</h4>
+            <h4 className="font-bold text-sm font-serif-ar text-slate-100">صحيفة القسم</h4>
             <span className="text-[10px] text-slate-400 font-medium block">نشرات الأخبار الدورية</span>
           </div>
         </button>
@@ -450,7 +450,7 @@ export default function CreativeOasis({
         {activeTab === 'poems' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {poems.map((poem: any) => (
-              <div key={poem.id} className="glass border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xl relative overflow-hidden">
+              <div key={poem.id} className="glass border border-slate-500/20 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl pointer-events-none"></div>
                 
                 <div className="space-y-4">
@@ -460,7 +460,7 @@ export default function CreativeOasis({
                     </span>
                     <button
                       onClick={() => handleShareContent(poem.title, poem.author)}
-                      className="p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-white transition cursor-pointer"
+                      className="p-1.5 rounded-lg bg-slate-400/10 text-slate-400 hover:text-slate-100 transition cursor-pointer"
                       title="نسخ ومشاركة القصيدة"
                     >
                       <Share2 className="w-4 h-4" />
@@ -468,11 +468,11 @@ export default function CreativeOasis({
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold font-serif-ar text-white">{poem.title}</h3>
+                    <h3 className="text-xl font-bold font-serif-ar text-slate-100">{poem.title}</h3>
                     <p className="text-xs text-amber-300 font-semibold mt-1">نظم: {poem.author}</p>
                   </div>
 
-                  <p className="text-xs text-slate-400 leading-relaxed font-semibold italic bg-white/5 p-3.5 rounded-xl border border-white/5">
+                  <p className="text-xs text-slate-400 leading-relaxed font-semibold italic bg-slate-400/10 p-3.5 rounded-xl border border-white/5">
                     {poem.intro}
                   </p>
 
@@ -484,7 +484,7 @@ export default function CreativeOasis({
                       return (
                         <div 
                           key={v.id}
-                          className="group flex flex-col sm:flex-row items-center font-serif-ar text-sm text-slate-200 border-b border-white/5 pb-2.5 last:border-0 hover:bg-white/5 p-1 rounded-lg transition"
+                          className="group flex flex-col sm:flex-row items-center font-serif-ar text-sm text-slate-200 border-b border-white/5 pb-2.5 last:border-0 hover:bg-slate-400/10 p-1 rounded-lg transition"
                         >
                           <div className="w-full sm:w-1/2 text-right pr-2 select-text font-semibold">
                             {v.front}
@@ -537,7 +537,7 @@ export default function CreativeOasis({
                   {stories.map((story: any) => (
                     <div 
                       key={story.id}
-                      className="glass border border-white/10 rounded-3xl p-6 hover:border-blue-500/40 transition duration-300 shadow-2xl flex flex-col justify-between space-y-4"
+                      className="glass border border-slate-500/20 rounded-3xl p-6 hover:border-blue-500/40 transition duration-300 shadow-2xl flex flex-col justify-between space-y-4"
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-center text-xs text-slate-400">
@@ -550,7 +550,7 @@ export default function CreativeOasis({
                           </span>
                         </div>
 
-                        <h3 className="text-lg font-bold font-serif-ar text-white">{story.title}</h3>
+                        <h3 className="text-lg font-bold font-serif-ar text-slate-100">{story.title}</h3>
                         <p className="text-[10px] text-blue-300 font-semibold">بقلم الأديب: {story.author}</p>
                         
                         <p className="text-xs text-slate-300 leading-relaxed font-semibold line-clamp-3">
@@ -561,7 +561,7 @@ export default function CreativeOasis({
                       <div className="flex justify-between items-center pt-3 border-t border-white/5">
                         <button
                           onClick={() => setSelectedStory(story.id)}
-                          className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-white transition cursor-pointer"
+                          className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-slate-100 transition cursor-pointer"
                         >
                           <span>قراءة القصة كاملة ومطالعة العبرة</span>
                           <ChevronLeft className="w-4 h-4" />
@@ -569,7 +569,7 @@ export default function CreativeOasis({
                         
                         <button
                           onClick={() => handleShareContent(story.title, story.author)}
-                          className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                          className="p-2 rounded-xl bg-slate-400/10 text-slate-400 hover:text-slate-100 hover:bg-slate-400/20 transition cursor-pointer"
                           title="نسخ رابط القصة"
                         >
                           <Share2 className="w-4 h-4" />
@@ -587,13 +587,13 @@ export default function CreativeOasis({
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      className="glass border border-white/10 rounded-3xl p-6 sm:p-10 space-y-6 shadow-2xl"
+                      className="glass border border-slate-500/20 rounded-3xl p-6 sm:p-10 space-y-6 shadow-2xl"
                     >
                       {/* Back button and Meta */}
-                      <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                      <div className="flex justify-between items-center border-b border-slate-500/20 pb-4">
                         <button
                           onClick={() => setSelectedStory(null)}
-                          className="flex items-center gap-1 text-xs font-bold text-slate-400 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl transition cursor-pointer"
+                          className="flex items-center gap-1 text-xs font-bold text-slate-400 bg-slate-400/10 hover:bg-slate-400/20 border border-slate-500/20 px-4 py-2 rounded-xl transition cursor-pointer"
                         >
                           <ChevronLeft className="w-4 h-4 transform rotate-180" />
                           <span>العودة لجميع القصص المتاحة</span>
@@ -606,7 +606,7 @@ export default function CreativeOasis({
 
                       {/* Header Title */}
                       <div className="space-y-1.5 text-right font-serif-ar">
-                        <h2 className="text-2xl sm:text-3.5xl font-extrabold text-white leading-snug">
+                        <h2 className="text-2xl sm:text-3.5xl font-extrabold text-slate-100 leading-snug">
                           {s.title}
                         </h2>
                         <span className="inline-block px-3 py-1 rounded-md text-xs font-bold bg-blue-900/40 text-blue-300 border border-blue-500/20">
@@ -638,7 +638,7 @@ export default function CreativeOasis({
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleShareContent(s.title, s.author)}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600/10 text-blue-300 hover:bg-blue-600 hover:text-white transition cursor-pointer text-xs font-bold"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600/10 text-blue-300 hover:bg-blue-600 hover:text-slate-100 transition cursor-pointer text-xs font-bold"
                           >
                             <Share2 className="w-4 h-4" />
                             <span>مشاركة هذه الحكاية الآن</span>
@@ -659,7 +659,7 @@ export default function CreativeOasis({
             {travelogues.map((travel: any) => (
               <div 
                 key={travel.id}
-                className="glass border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xl relative overflow-hidden"
+                className="glass border border-slate-500/20 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xl relative overflow-hidden"
               >
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
@@ -673,7 +673,7 @@ export default function CreativeOasis({
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold font-serif-ar text-white">{travel.title}</h3>
+                    <h3 className="text-lg font-bold font-serif-ar text-slate-100">{travel.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-emerald-300 font-semibold">{travel.traveler}</span>
                       <span className="text-slate-500 text-[10px]">•</span>
@@ -690,7 +690,7 @@ export default function CreativeOasis({
                   <span className="font-semibold text-slate-500">من مدونات رحلات جامعة عين الهدى</span>
                   <button
                     onClick={() => handleShareContent(travel.title, travel.traveler)}
-                    className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                    className="p-2 rounded-xl bg-slate-400/10 text-slate-400 hover:text-slate-100 hover:bg-slate-400/20 transition cursor-pointer"
                     title="نسخ مذكرات المدونة أدب الرحلة"
                   >
                     <Share2 className="w-4 h-4" />
@@ -707,12 +707,12 @@ export default function CreativeOasis({
             {newspapers.map((newspaper: any) => (
               <div 
                 key={newspaper.id}
-                className="glass border border-white/10 rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xl relative overflow-hidden group"
+                className="glass border border-slate-500/20 rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xl relative overflow-hidden group"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none transition-transform group-hover:scale-150"></div>
                 
                 <div className="flex gap-4">
-                  <div className="w-24 h-32 shrink-0 rounded-xl overflow-hidden border border-white/10 relative">
+                  <div className="w-24 h-32 shrink-0 rounded-xl overflow-hidden border border-slate-500/20 relative">
                     <img src={newspaper.coverUrl} alt={newspaper.title} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent flex items-end justify-center pb-2">
                        <FileText className="w-5 h-5 text-indigo-300" />
@@ -720,7 +720,7 @@ export default function CreativeOasis({
                   </div>
                   <div className="flex flex-col justify-center space-y-2">
                     <span className="text-[10px] text-indigo-400 font-bold tracking-wider">{newspaper.publishDate}</span>
-                    <h3 className="font-bold text-white font-serif-ar leading-snug">{newspaper.title}</h3>
+                    <h3 className="font-bold text-slate-100 font-serif-ar leading-snug">{newspaper.title}</h3>
                   </div>
                 </div>
 
@@ -884,14 +884,14 @@ export default function CreativeOasis({
                   <div className="flex gap-3 pt-2">
                     <button
                       type="submit"
-                      className="flex-grow bg-amber-600 hover:bg-amber-500 text-slate-100 font-bold py-2.5 rounded-xl transition cursor-pointer text-xs"
+                      className="flex-grow bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl transition cursor-pointer text-xs"
                     >
                       مشاركة في واحة {settings?.siteName || 'شذرات'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setSubmitOpenState(false)}
-                      className="bg-white/5 hover:bg-white/10 text-slate-300 font-bold px-4 py-2.5 rounded-xl border border-white/10 transition cursor-pointer text-xs"
+                      className="bg-slate-400/10 hover:bg-slate-400/20 text-slate-300 font-bold px-4 py-2.5 rounded-xl border border-slate-500/20 transition cursor-pointer text-xs"
                     >
                       إلغاء الأمر
                     </button>

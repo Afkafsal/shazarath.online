@@ -1,87 +1,107 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&family=Noto+Sans+Arabic:wght@100..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  /* LIGHT MODE (DEFAULT) */
-  --page-bg: #f8fafc;
-  --page-grad: radial-gradient(circle at top right, #ffffff 0%, #f8fafc 100%);
-  --text-base: #1e293b;
+  --bg-base: #f6f5f1;
+  --bg-surface: #fffdf9;
+  --bg-raised: #eeebe3;
+  --border: #e8e4da;
 
-  /* Inverted Slate Scale for Light Mode */
-  --slate-950: #ffffff;
-  --slate-905: #f1f5f9;
-  --slate-900: #ffffff;
-  --slate-850: #f1f5f9;
-  --slate-800: #e2e8f0;
-  --slate-750: #cbd5e1;
-  --slate-700: #94a3b8;
-  --slate-600: #64748b;
-  --slate-500: #475569;
-  --slate-400: #334155;
-  --slate-300: #1e293b;
-  --slate-200: #0f172a;
-  --slate-100: #020617;
+  --text-primary: #21201c;
+  --text-secondary: #5c574c;
+  --text-tertiary: #9b9586;
 
-  /* Glass in Light Mode */
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(29, 78, 216, 0.12);
-  --glass-bg-light: rgba(255, 255, 255, 0.9);
-  --glass-border-light: rgba(29, 78, 216, 0.15);
+  --accent: #1d4ed8;
+  --accent-hover: #2563eb;
 
-  /* Scrollbar Light Mode */
-  --scroll-track: #f1f5f9;
-  --scroll-thumb: #cbd5e1;
-  --scroll-hover: #2563eb;
+  --tag-tech-bg: #e7eefc;
+  --tag-tech-text: #1d4ed8;
+  --tag-culture-bg: #e1f5f0;
+  --tag-culture-text: #0f6e56;
+  --tag-featured-bg: #f1e6ff;
+  --tag-featured-text: #7c3aed;
+
+  --page-bg: var(--bg-base);
+  --page-grad: var(--bg-base);
+  --text-base: var(--text-primary);
   
-  --blue-hover: rgba(239, 246, 255, 0.5); /* blue-50/50 */
+  --slate-950: var(--bg-base);
+  --slate-905: var(--bg-raised);
+  --slate-900: var(--bg-surface);
+  --slate-850: var(--bg-raised);
+  --slate-800: var(--border);
+  --slate-750: var(--border);
+  --slate-700: var(--text-tertiary);
+  --slate-600: var(--text-tertiary);
+  --slate-500: var(--text-secondary);
+  --slate-400: var(--text-secondary);
+  --slate-300: var(--text-primary);
+  --slate-200: var(--text-primary);
+  --slate-100: var(--text-primary);
+
+  --glass-bg: rgba(255, 253, 249, 0.75);
+  --glass-border: var(--border);
+  --glass-bg-light: rgba(255, 253, 249, 0.9);
+  --glass-border-light: var(--border);
+
+  --scroll-track: var(--bg-raised);
+  --scroll-thumb: var(--text-tertiary);
+  --scroll-hover: var(--accent);
+  --blue-hover: rgba(29, 78, 216, 0.1);
 }
 
 html.dark {
-  /* DARK MODE */
-  --page-bg: #020617;
-  --page-grad: radial-gradient(circle at top right, #0f172a 0%, #020617 100%);
-  --text-base: #cbd5e1;
+  --bg-base: #05070f;
+  --bg-surface: #0c0f1a;
+  --bg-raised: #171c2c;
+  --border: rgba(255, 255, 255, 0.06);
 
-  /* Original Slate Scale for Dark Mode */
-  --slate-950: #0a1128;
-  --slate-905: #0e1836;
-  --slate-900: #020617;
-  --slate-850: #0f172a;
-  --slate-800: #1e293b;
-  --slate-750: #334155;
-  --slate-700: #475569;
-  --slate-600: #64748b;
-  --slate-500: #94a3b8;
-  --slate-400: #cbd5e1;
-  --slate-300: #e2e8f0;
-  --slate-200: #f1f5f9;
-  --slate-100: #ffffff;
+  --text-primary: #eef1f7;
+  --text-secondary: #a8b0c0;
+  --text-tertiary: #6b7388;
 
-  /* Glass in Dark Mode */
-  --glass-bg: rgba(15, 23, 42, 0.75);
-  --glass-border: rgba(59, 130, 246, 0.15);
-  --glass-bg-light: rgba(2, 6, 23, 0.9);
-  --glass-border-light: rgba(59, 130, 246, 0.2);
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
 
-  /* Scrollbar Dark Mode */
-  --scroll-track: #020617;
-  --scroll-thumb: #1e293b;
-  --scroll-hover: #3b82f6;
+  --tag-tech-bg: rgba(59, 130, 246, 0.15);
+  --tag-tech-text: #7db8ff;
+  --tag-culture-bg: rgba(45, 212, 191, 0.15);
+  --tag-culture-text: #6ee7d6;
+  --tag-featured-bg: rgba(199, 138, 255, 0.15);
+  --tag-featured-text: #cfa6ff;
 
-  --blue-hover: rgba(7, 13, 30, 0.4); /* blue-950/40 */
+  --page-bg: var(--bg-base);
+  --page-grad: var(--bg-base);
+  --text-base: var(--text-primary);
+  
+  --slate-950: var(--bg-base);
+  --slate-905: var(--bg-surface);
+  --slate-900: var(--bg-surface);
+  --slate-850: var(--bg-raised);
+  --slate-800: var(--bg-raised);
+  --slate-750: var(--border);
+  --slate-700: var(--border);
+  --slate-600: var(--text-tertiary);
+  --slate-500: var(--text-tertiary);
+  --slate-400: var(--text-secondary);
+  --slate-300: var(--text-secondary);
+  --slate-200: var(--text-primary);
+  --slate-100: var(--text-primary);
+
+  --glass-bg: rgba(12, 15, 26, 0.75);
+  --glass-border: var(--border);
+  --glass-bg-light: rgba(12, 15, 26, 0.9);
+  --glass-border-light: var(--border);
+
+  --scroll-track: var(--bg-base);
+  --scroll-thumb: var(--bg-raised);
+  --scroll-hover: var(--accent);
+  --blue-hover: rgba(59, 130, 246, 0.1);
 }
 
-@theme {
-  --font-tajawal: "Noto Kufi Arabic", "Inter", sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-serif-ar: 'Noto Kufi Arabic', 'Georgia', serif;
-  
-  --color-brand-blue-950: #070d1e;
-  --color-brand-blue-900: #0a1128;
-  --color-brand-blue-800: #1c2a4f;
-  
-  /* Map Tailwind vars to our semantic CSS variables */
+:root {
+  /* Theme overrides on root */
   --color-slate-950: var(--slate-950);
   --color-slate-905: var(--slate-905);
   --color-slate-900: var(--slate-900);
@@ -96,43 +116,40 @@ html.dark {
   --color-slate-200: var(--slate-200);
   --color-slate-100: var(--slate-100);
 
-  /* Royal blue shades */
-  --color-blue-950: #0d1e3d;
-  --color-blue-900: #1e3a8a;
-  --color-blue-800: #1e40af;
-  --color-blue-700: #1d4ed8;
-  --color-blue-600: #2563eb;
-  --color-blue-500: #3b82f6;
-  --color-blue-400: #60a5fa;
-  --color-blue-300: #93c5fd;
-  --color-blue-200: #bfdbfe;
-  --color-blue-100: #dbeafe;
+  --color-blue-950: var(--bg-surface);
+  --color-blue-900: var(--bg-raised);
+  --color-blue-800: var(--border);
+  --color-blue-700: var(--accent);
+  --color-blue-600: var(--accent);
+  --color-blue-500: var(--accent-hover);
+  --color-blue-400: var(--accent-hover);
+  --color-blue-300: var(--text-primary);
+  --color-blue-200: var(--text-primary);
+  --color-blue-100: var(--text-primary);
+  
+  --color-amber-600: var(--tag-culture-bg);
+  --color-amber-500: var(--tag-culture-text);
+  --color-amber-400: var(--tag-culture-text);
+  --color-amber-300: var(--tag-culture-text);
 
-  /* Sky blue shades */
-  --color-sky-950: #083344;
-  --color-sky-900: #0c4a6e;
-  --color-sky-800: #075985;
-  --color-sky-450: #0284c7;
-  --color-sky-400: #38bdf8;
-  --color-sky-300: #7dd3fc;
+  --font-tajawal: "Noto Kufi Arabic", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-serif-ar: "Noto Kufi Arabic", serif;
+  --font-brand: "Noto Kufi Arabic", serif;
 }
 
-/* Custom scrollbars for readers and admin log panels */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: var(--scroll-track);
   border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--scroll-thumb);
   border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scroll-hover);
 }
@@ -140,71 +157,66 @@ html.dark {
 body, html, input, button, select, option, textarea, span, p, a, li, div {
   font-family: "Noto Kufi Arabic", sans-serif !important;
 }
-
 h1, h2, h3, h4, h5, h6,
 h1 *, h2 *, h3 *, h4 *, h5 *, h6 *,
-.font-serif-ar,
-.font-tajawal-kufi {
-  font-family: 'Noto Kufi Arabic', sans-serif !important;
+.font-serif-ar, .font-brand {
+  font-family: "Noto Kufi Arabic", serif !important;
 }
-
 code, pre, .font-mono, .font-mono * {
-  font-family: 'JetBrains Mono', monospace !important;
+  font-family: "JetBrains Mono", monospace !important;
 }
 
 body {
-  background-color: var(--page-bg);
-  background-image: var(--page-grad);
-  background-attachment: fixed;
-  color: var(--text-base);
+  background-color: var(--bg-base);
+  color: var(--text-secondary);
   direction: rtl;
 }
 
-/* Sophisticated premium Glassmorphic panels */
 .glass {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--border);
   border-radius: 1.5rem;
 }
-
 .glass-light {
   background: var(--glass-bg-light);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid var(--border);
 }
-
 .glass-panel {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--border);
 }
-
 .glass-panel-light {
   background: var(--glass-bg-light);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid var(--border);
 }
 
 .prose {
-  --tw-prose-body: var(--text-base) !important;
-  --tw-prose-headings: var(--text-base) !important;
-  --tw-prose-lead: var(--slate-400) !important;
-  --tw-prose-links: var(--color-blue-500) !important;
-  --tw-prose-bold: var(--text-base) !important;
-  --tw-prose-counters: var(--slate-500) !important;
-  --tw-prose-bullets: var(--slate-500) !important;
-  --tw-prose-hr: var(--slate-800) !important;
-  --tw-prose-quotes: var(--text-base) !important;
-  --tw-prose-quote-borders: var(--slate-800) !important;
-  --tw-prose-captions: var(--slate-400) !important;
-  --tw-prose-code: var(--text-base) !important;
-  --tw-prose-pre-code: var(--text-base) !important;
-  --tw-prose-pre-bg: var(--slate-950) !important;
-  --tw-prose-th-borders: var(--slate-800) !important;
-  --tw-prose-td-borders: var(--slate-800) !important;
+  --tw-prose-body: var(--text-secondary) !important;
+  --tw-prose-headings: var(--text-primary) !important;
+  --tw-prose-lead: var(--text-tertiary) !important;
+  --tw-prose-links: var(--accent-hover) !important;
+  --tw-prose-bold: var(--text-primary) !important;
+  --tw-prose-counters: var(--text-tertiary) !important;
+  --tw-prose-bullets: var(--text-tertiary) !important;
+  --tw-prose-hr: var(--border) !important;
+  --tw-prose-quotes: var(--text-primary) !important;
+  --tw-prose-quote-borders: var(--border) !important;
+  --tw-prose-captions: var(--text-tertiary) !important;
+  --tw-prose-code: var(--text-primary) !important;
+  --tw-prose-pre-code: var(--text-primary) !important;
+  --tw-prose-pre-bg: var(--bg-surface) !important;
+  --tw-prose-th-borders: var(--border) !important;
+  --tw-prose-td-borders: var(--border) !important;
 }
+
+.tag-tech { background-color: var(--tag-tech-bg); color: var(--tag-tech-text); border-color: var(--tag-tech-text); }
+.tag-culture { background-color: var(--tag-culture-bg); color: var(--tag-culture-text); border-color: var(--tag-culture-text); }
+.tag-featured { background-color: var(--tag-featured-bg); color: var(--tag-featured-text); border-color: var(--tag-featured-text); }
