@@ -279,15 +279,10 @@ export default function AdminDashboard({
       finalAuthorId = newAuthorId;
     }
 
-    // Upload JSON content if it's an object
+    // Store JSON content directly as string to avoid Storage CORS issues and latency
     let finalContentUrlOrString = artContent;
     if (typeof artContent === 'object' && artContent !== null) {
-      try {
-        finalContentUrlOrString = await uploadJsonToStorage(artContent, `articles/${Date.now()}.json`);
-      } catch (err) {
-        alert('فشل رفع محتوى المقال: ' + (err as Error).message);
-        return;
-      }
+      finalContentUrlOrString = JSON.stringify(artContent);
     }
 
     if (editingArticleId !== null) {

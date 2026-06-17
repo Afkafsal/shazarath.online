@@ -11,7 +11,13 @@ import { Callout, DropCap, MultiColumn, Footnote } from './TiptapEditor';
 import { useEffect, useState } from 'react';
 
 export default function TiptapRenderer({ content, fontSize = 'md' }: { content: any, fontSize?: 'sm' | 'md' | 'lg' | 'xl' }) {
-  const [resolvedContent, setResolvedContent] = useState<any>(content);
+  const [resolvedContent, setResolvedContent] = useState<any>(() => {
+    if (typeof content === 'string') {
+      if (content.startsWith('http') && content.includes('firebasestorage')) return '';
+      try { return JSON.parse(content); } catch { return content; }
+    }
+    return content;
+  });
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -23,6 +29,14 @@ export default function TiptapRenderer({ content, fontSize = 'md' }: { content: 
           setResolvedContent(json);
         } catch (e) {
           // If fetch fails or it's not JSON, render it as normal text.
+          setResolvedContent(content);
+        }
+      } else if (typeof content === 'string') {
+        try {
+          // Try to parse if it's a JSON string
+          const parsed = JSON.parse(content);
+          setResolvedContent(parsed);
+        } catch {
           setResolvedContent(content);
         }
       } else {

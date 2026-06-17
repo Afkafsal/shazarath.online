@@ -170,7 +170,13 @@ export default function TiptapEditor({ content, onChange }: { content: any; onCh
       MultiColumn,
       Footnote,
     ],
-    content,
+    content: (() => {
+      if (typeof content === 'string') {
+        if (content.startsWith('http') && content.includes('firebasestorage')) return '';
+        try { return JSON.parse(content); } catch { return content; }
+      }
+      return content || '';
+    })(),
     onUpdate: ({ editor }) => {
       onChange(editor.getJSON());
     },
@@ -184,14 +190,38 @@ export default function TiptapEditor({ content, onChange }: { content: any; onCh
   
   useEffect(() => {
     if (editor && content && !editor.isFocused) {
-      const currentJson = editor.getJSON();
-      if (JSON.stringify(currentJson) !== JSON.stringify(content)) {
-        // Only set content if we have a valid object (tiptap doc) or if it's empty
-        if (typeof content === 'object') {
-           editor.commands.setContent(content);
-        } else if (typeof content === 'string') {
-          // Fallback if legacy html/text is passed
-           editor.commands.setContent(content);
+      if (typeof content === 'string' && content.startsWith('http') && content.includes('firebasestorage')) {
+        fetch(content)
+          .then(res => res.json())
+          .then(json => {
+            if (JSON.stringify(editor.getJSON()) !== JSON.stringify(json)) {
+              editor.commands.setContent(json);
+              onChange(json);
+            }
+          })
+          .catch(e => {
+            console.error("Failed to load article content", e);
+            editor.commands.setContent(content);
+          });
+      } else {
+        let actualContent = content;
+        if (typeof content === 'string') {
+          try {
+            actualContent = JSON.parse(content);
+          } catch {
+            actualContent = content;
+          }
+        }
+        
+        const currentJson = editor.getJSON();
+        if (JSON.stringify(currentJson) !== JSON.stringify(actualContent)) {
+          // Only set content if we have a valid object (tiptap doc) or if it's empty
+          if (typeof actualContent === 'object') {
+             editor.commands.setContent(actualContent);
+          } else if (typeof actualContent === 'string') {
+            // Fallback if legacy html/text is passed
+             editor.commands.setContent(actualContent);
+          }
         }
       }
     }
