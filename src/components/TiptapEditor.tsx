@@ -192,7 +192,10 @@ export default function TiptapEditor({ content, onChange }: { content: any; onCh
     if (editor && content && !editor.isFocused) {
       if (typeof content === 'string' && content.startsWith('http') && content.includes('firebasestorage')) {
         fetch(content)
-          .then(res => res.json())
+          .then(async res => {
+            if (!res.ok) throw new Error("Network response was not ok");
+            return res.json();
+          })
           .then(json => {
             if (JSON.stringify(editor.getJSON()) !== JSON.stringify(json)) {
               editor.commands.setContent(json);
@@ -200,8 +203,12 @@ export default function TiptapEditor({ content, onChange }: { content: any; onCh
             }
           })
           .catch(e => {
-            console.error("Failed to load article content", e);
-            editor.commands.setContent(content);
+            console.error("Failed to load article content, likely CORS", e);
+            const errorDoc = {
+              type: "doc",
+              content: [{ type: "paragraph", content: [{ type: "text", text: "⚠️ تعذر جلب محتوى هذا المقال (مشكلة CORS في التخزين)." }] }]
+            };
+            editor.commands.setContent(errorDoc);
           });
       } else {
         let actualContent = content;

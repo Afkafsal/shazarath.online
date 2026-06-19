@@ -25,11 +25,17 @@ export default function TiptapRenderer({ content, fontSize = 'md' }: { content: 
       if (typeof content === 'string' && content.startsWith('http') && content.includes('firebasestorage')) {
         try {
           const res = await fetch(content);
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
           const json = await res.json();
           setResolvedContent(json);
         } catch (e) {
-          // If fetch fails or it's not JSON, render it as normal text.
-          setResolvedContent(content);
+          console.error("Failed to load storage JSON, likely a CORS issue:", e);
+          // If fetch fails (CORS), show an error block instead of raw URL
+          const errorDoc = {
+            type: "doc",
+            content: [{ type: "paragraph", content: [{ type: "text", text: "⚠️ تعذر تحميل محتوى المقال من التخزين. قد يعود السبب إلى إعدادات CORS." }] }]
+          };
+          setResolvedContent(errorDoc);
         }
       } else if (typeof content === 'string') {
         try {

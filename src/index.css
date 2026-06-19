@@ -3,118 +3,42 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --bg-base: #f6f5f1;
-  --bg-surface: #fffdf9;
-  --bg-raised: #eeebe3;
-  --border: #e8e4da;
+  --bg-base: #F0F6FF;
+  --bg-surface: #FFFFFF;
+  --bg-raised: #E8EEF7;
+  --border: #D6E4F7;
 
-  --text-primary: #21201c;
-  --text-secondary: #5c574c;
-  --text-tertiary: #9b9586;
+  --text-primary: #0B2E5E;
+  --text-secondary: #4A6080;
+  --text-tertiary: #8BB8E8;
 
-  --accent: #1d4ed8;
-  --accent-hover: #2563eb;
+  --accent: #4A90D9;
+  --accent-hover: #2563A8;
 
-  --tag-tech-bg: #e7eefc;
-  --tag-tech-text: #1d4ed8;
-  --tag-culture-bg: #e1f5f0;
-  --tag-culture-text: #0f6e56;
-  --tag-featured-bg: #f1e6ff;
-  --tag-featured-text: #7c3aed;
-
-  --page-bg: var(--bg-base);
-  --page-grad: var(--bg-base);
-  --text-base: var(--text-primary);
-  
-  --slate-950: var(--bg-base);
-  --slate-905: var(--bg-raised);
-  --slate-900: var(--bg-surface);
-  --slate-850: var(--bg-raised);
-  --slate-800: var(--border);
-  --slate-750: var(--border);
-  --slate-700: var(--text-tertiary);
-  --slate-600: var(--text-tertiary);
-  --slate-500: var(--text-secondary);
-  --slate-400: var(--text-secondary);
-  --slate-300: var(--text-primary);
-  --slate-200: var(--text-primary);
-  --slate-100: var(--text-primary);
-
-  --glass-bg: rgba(255, 253, 249, 0.75);
-  --glass-border: var(--border);
-  --glass-bg-light: rgba(255, 253, 249, 0.9);
-  --glass-border-light: var(--border);
-
-  --scroll-track: var(--bg-raised);
-  --scroll-thumb: var(--text-tertiary);
-  --scroll-hover: var(--accent);
-  --blue-hover: rgba(29, 78, 216, 0.1);
-}
-
-html.dark {
-  --bg-base: #05070f;
-  --bg-surface: #0c0f1a;
-  --bg-raised: #171c2c;
-  --border: rgba(255, 255, 255, 0.06);
-
-  --text-primary: #eef1f7;
-  --text-secondary: #a8b0c0;
-  --text-tertiary: #6b7388;
-
-  --accent: #3b82f6;
-  --accent-hover: #60a5fa;
-
-  --tag-tech-bg: rgba(59, 130, 246, 0.15);
-  --tag-tech-text: #7db8ff;
-  --tag-culture-bg: rgba(45, 212, 191, 0.15);
-  --tag-culture-text: #6ee7d6;
-  --tag-featured-bg: rgba(199, 138, 255, 0.15);
-  --tag-featured-text: #cfa6ff;
+  --tag-tech-bg: #E8EEF7;
+  --tag-tech-text: #1E3A5F;
+  --tag-culture-bg: #D6E4F7;
+  --tag-culture-text: #0B2E5E;
+  --tag-featured-bg: #FFFAF2;
+  --tag-featured-text: #C9A84C;
 
   --page-bg: var(--bg-base);
   --page-grad: var(--bg-base);
   --text-base: var(--text-primary);
-  
-  --slate-950: var(--bg-base);
-  --slate-905: var(--bg-surface);
-  --slate-900: var(--bg-surface);
-  --slate-850: var(--bg-raised);
-  --slate-800: var(--bg-raised);
-  --slate-750: var(--border);
-  --slate-700: var(--border);
-  --slate-600: var(--text-tertiary);
-  --slate-500: var(--text-tertiary);
-  --slate-400: var(--text-secondary);
-  --slate-300: var(--text-secondary);
-  --slate-200: var(--text-primary);
-  --slate-100: var(--text-primary);
 
-  --glass-bg: rgba(12, 15, 26, 0.75);
-  --glass-border: var(--border);
-  --glass-bg-light: rgba(12, 15, 26, 0.9);
-  --glass-border-light: var(--border);
-
-  --scroll-track: var(--bg-base);
-  --scroll-thumb: var(--bg-raised);
-  --scroll-hover: var(--accent);
-  --blue-hover: rgba(59, 130, 246, 0.1);
-}
-
-:root {
-  /* Theme overrides on root */
-  --color-slate-950: var(--slate-950);
-  --color-slate-905: var(--slate-905);
-  --color-slate-900: var(--slate-900);
-  --color-slate-850: var(--slate-850);
-  --color-slate-800: var(--slate-800);
-  --color-slate-750: var(--slate-750);
-  --color-slate-700: var(--slate-700);
-  --color-slate-600: var(--slate-600);
-  --color-slate-500: var(--slate-500);
-  --color-slate-400: var(--slate-400);
-  --color-slate-300: var(--slate-300);
-  --color-slate-200: var(--slate-200);
-  --color-slate-100: var(--slate-100);
+  --color-slate-950: var(--bg-base);
+  --color-slate-905: var(--bg-raised);
+  --color-slate-900: var(--bg-surface);
+  --color-slate-850: var(--bg-raised);
+  --color-slate-800: var(--border);
+  --color-slate-750: var(--border);
+  --color-slate-700: var(--text-tertiary);
+  --color-slate-600: var(--text-tertiary);
+  --color-slate-500: var(--text-secondary);
+  --color-slate-400: var(--text-secondary);
+  --color-slate-300: var(--text-primary);
+  --color-slate-200: var(--text-primary);
+  --color-slate-100: var(--text-primary);
 
   --color-blue-950: var(--bg-surface);
   --color-blue-900: var(--bg-raised);
@@ -126,12 +50,68 @@ html.dark {
   --color-blue-300: var(--text-primary);
   --color-blue-200: var(--text-primary);
   --color-blue-100: var(--text-primary);
-  
-  --color-amber-600: var(--tag-culture-bg);
-  --color-amber-500: var(--tag-culture-text);
-  --color-amber-400: var(--tag-culture-text);
-  --color-amber-300: var(--tag-culture-text);
 
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: var(--border);
+  --glass-bg-light: rgba(255, 255, 255, 0.9);
+  --glass-border-light: var(--border);
+
+  --scroll-track: var(--bg-raised);
+  --scroll-thumb: var(--text-tertiary);
+  --scroll-hover: var(--accent);
+  --blue-hover: rgba(74, 144, 217, 0.1);
+}
+
+html.dark {
+  --bg-base: #061124;
+  --bg-surface: #0B1C38;
+  --bg-raised: #11284E;
+  --border: #1E3A5F;
+
+  --text-primary: #F0F6FF;
+  --text-secondary: #8BB8E8;
+  --text-tertiary: #4A6080;
+
+  --accent: #4A90D9;
+  --accent-hover: #D6E4F7;
+
+  --tag-tech-bg: rgba(74, 144, 217, 0.15);
+  --tag-tech-text: #8BB8E8;
+  --tag-culture-bg: rgba(30, 58, 95, 0.4);
+  --tag-culture-text: #F0F6FF;
+  --tag-featured-bg: rgba(201, 168, 76, 0.15);
+  --tag-featured-text: #C9A84C;
+
+  --page-bg: var(--bg-base);
+  --page-grad: var(--bg-base);
+  --text-base: var(--text-primary);
+
+  --color-slate-950: var(--bg-base);
+  --color-slate-905: var(--bg-surface);
+  --color-slate-900: var(--bg-surface);
+  --color-slate-850: var(--bg-raised);
+  --color-slate-800: var(--bg-raised);
+  --color-slate-750: var(--border);
+  --color-slate-700: var(--border);
+  --color-slate-600: var(--text-tertiary);
+  --color-slate-500: var(--text-tertiary);
+  --color-slate-400: var(--text-secondary);
+  --color-slate-300: var(--text-secondary);
+  --color-slate-200: var(--text-primary);
+  --color-slate-100: var(--text-primary);
+
+  --glass-bg: rgba(11, 28, 56, 0.75);
+  --glass-border: var(--border);
+  --glass-bg-light: rgba(11, 28, 56, 0.9);
+  --glass-border-light: var(--border);
+  
+  --scroll-track: var(--bg-base);
+  --scroll-thumb: var(--bg-raised);
+  --scroll-hover: var(--accent);
+  --blue-hover: rgba(74, 144, 217, 0.15);
+}
+
+@theme {
   --font-tajawal: "Noto Kufi Arabic", "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --font-serif-ar: "Noto Kufi Arabic", serif;
