@@ -3,14 +3,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --bg-base: #F0F6FF;
-  --bg-surface: #FFFFFF;
-  --bg-raised: #E8EEF7;
+  --bg-base: #FFFFFF;
+  --bg-surface: #F8FAFC;
+  --bg-raised: #F0F6FF;
   --border: #D6E4F7;
 
   --text-primary: #0B2E5E;
-  --text-secondary: #4A6080;
-  --text-tertiary: #8BB8E8;
+  --text-secondary: #2563A8;
+  --text-tertiary: #4A6080;
 
   --accent: #4A90D9;
   --accent-hover: #2563A8;
@@ -112,6 +112,31 @@ html.dark {
 }
 
 @theme {
+  --color-slate-950: var(--bg-base);
+  --color-slate-905: var(--bg-raised);
+  --color-slate-900: var(--bg-surface);
+  --color-slate-850: var(--bg-raised);
+  --color-slate-800: var(--border);
+  --color-slate-750: var(--border);
+  --color-slate-700: var(--text-tertiary);
+  --color-slate-600: var(--text-tertiary);
+  --color-slate-500: var(--text-secondary);
+  --color-slate-400: var(--text-secondary);
+  --color-slate-300: var(--text-primary);
+  --color-slate-200: var(--text-primary);
+  --color-slate-100: var(--text-primary);
+
+  --color-blue-950: var(--bg-surface);
+  --color-blue-900: var(--bg-raised);
+  --color-blue-800: var(--border);
+  --color-blue-700: var(--accent);
+  --color-blue-600: var(--accent);
+  --color-blue-500: var(--accent-hover);
+  --color-blue-400: var(--accent-hover);
+  --color-blue-300: var(--text-primary);
+  --color-blue-200: var(--text-primary);
+  --color-blue-100: var(--text-primary);
+
   --font-tajawal: "Noto Kufi Arabic", "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --font-serif-ar: "Noto Kufi Arabic", serif;
